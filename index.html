@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fdf6e9">
-  <title>旅游模拟器desuwa v1.2 · 从订票到回家，全流程预演</title>
-  <meta name="description" content="第一视角旅游全流程模拟器：从几个月前买票订房、打包出发，到转机、入境、当地生活与返程退税，用细致到尴尬的检查清单和冷门突发状况，帮你把真实旅程先走一遍；还能和朋友一起编辑共享备忘录。">
+  <title>旅游模拟器desuwa v1.3 · 从订票到回家，全流程预演</title>
+  <meta name="description" content="第一视角旅游全流程模拟器：从几个月前买票订房、打包出发，到转机、入境、当地生活与返程退税，用细致到尴尬的检查清单和冷门突发状况，帮你把真实旅程先走一遍；还能和朋友用密码共同编辑共享备忘录。">
   <style>
     :root {
       --ink: #483631;
@@ -3250,6 +3250,7 @@
 
     .shared-status[data-state="online"] { background: var(--mint); color: #285a47; }
     .shared-status[data-state="saving"], .shared-status[data-state="editing"] { background: var(--butter); color: #705517; }
+    .shared-status[data-state="locked"] { background: var(--lilac); color: #58437e; }
     .shared-status[data-state="error"], .shared-status[data-state="offline"] { background: #ffd9d2; color: #8b392c; }
     .shared-status[data-state="remote"] { background: var(--lilac); color: #58437e; }
 
@@ -3369,7 +3370,7 @@
       justify-content: center;
       gap: 6px;
       padding: 26px;
-      background: rgba(255, 253, 248, 0.94);
+      background: #fffdf8;
       text-align: center;
     }
 
@@ -3398,6 +3399,57 @@
       color: var(--ink-faint);
       font-size: 11.5px;
       line-height: 1.7;
+    }
+
+    .shared-lock { z-index: 3; }
+
+    .shared-unlock-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: min(100%, 330px);
+      margin-top: 5px;
+    }
+
+    .shared-password-input {
+      flex: 1;
+      min-width: 0;
+      height: 38px;
+      padding: 0 10px;
+      border: 1.5px solid rgba(72, 54, 49, 0.55);
+      border-radius: 9px;
+      outline: 0;
+      background: #fffdf8;
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .shared-password-input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(169, 215, 231, 0.6); }
+    .shared-password-input::placeholder { color: var(--ink-faint); letter-spacing: 0; }
+
+    .shared-unlock-btn {
+      height: 38px;
+      padding: 0 15px;
+      border: 1.5px solid var(--ink);
+      border-radius: 9px;
+      background: var(--butter);
+      color: var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .shared-unlock-btn:hover { background: var(--peach); transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+    .shared-unlock-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+
+    .shared-lock-error {
+      min-height: 1.4em;
+      margin: 0 !important;
+      color: #a33f2e !important;
+      font-size: 11px !important;
+      font-weight: 700;
     }
 
     .shared-retry-btn {
@@ -3446,6 +3498,7 @@
     .shared-sync[data-state="online"] .shared-dot { background: #69b394; box-shadow: 0 0 0 3px rgba(105, 179, 148, 0.18); }
     .shared-sync[data-state="saving"] .shared-dot,
     .shared-sync[data-state="editing"] .shared-dot { background: var(--peach); animation: blink 0.8s ease infinite; }
+    .shared-sync[data-state="locked"] .shared-dot { background: #9a83c5; box-shadow: 0 0 0 3px rgba(154, 131, 197, 0.18); }
     .shared-sync[data-state="error"] .shared-dot,
     .shared-sync[data-state="offline"] .shared-dot { background: var(--peach-deep); }
     .shared-sync[data-state="remote"] .shared-dot { background: #9a83c5; }
@@ -3469,6 +3522,7 @@
       .shared-desc { margin: 8px 0 9px; font-size: 11.5px; }
       .shared-remote-banner { align-items: flex-start; flex-direction: column; gap: 6px; font-size: 10.5px; }
       .shared-remote-banner button { align-self: flex-start; }
+      .shared-unlock-form { width: 100%; }
       #sharedMemo { min-height: 228px; padding: 12px 13px; font-size: 17px; line-height: 31px; background-position: 0 12px; }
       .shared-cover { padding: 18px; }
       .shared-cover h4 { font-size: 15.5px; }
@@ -3647,6 +3701,10 @@
     <symbol id="i-pin" viewBox="0 0 24 24">
       <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
       <circle cx="12" cy="10" r="2.5"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="4.5" y="10" width="15" height="11" rx="2.5"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/>
     </symbol>
     <symbol id="i-share" viewBox="0 0 24 24">
       <circle cx="6" cy="12" r="2.4"/>
@@ -4153,7 +4211,7 @@
             <h2>和朋友一起写的共享备忘录</h2>
           </div>
         </div>
-        <p class="section-note"><span class="scribble">打开同一个链接的人，都能一起改。</span></p>
+        <p class="section-note"><span class="scribble">有密码的人，才能一起改。</span></p>
       </div>
 
       <div class="shared-paper">
@@ -4162,8 +4220,8 @@
           <div class="shared-heading">
             <span class="shared-icon" aria-hidden="true"><svg class="icon"><use href="#i-users"/></svg></span>
             <div>
-              <span class="shared-kicker">SHARED MEMO · AUTO SYNC</span>
-              <h3 id="sharedTitle">旅伴共享便签 <span class="shared-status" id="sharedStatus" data-state="connecting" aria-live="polite">连接中…</span></h3>
+              <span class="shared-kicker">SHARED MEMO · PASSWORD LOCKED</span>
+              <h3 id="sharedTitle">旅伴共享便签 <span class="shared-status" id="sharedStatus" data-state="locked" aria-live="polite">已上锁</span></h3>
             </div>
           </div>
           <div class="shared-tools">
@@ -4175,12 +4233,16 @@
               <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
               同步
             </button>
+            <button class="shared-tool-btn" id="sharedLockBtn" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+              锁定
+            </button>
           </div>
         </div>
 
         <p class="shared-desc">
-          打开这个页面的朋友会看到同一张便签，修改会自动保存，约 3 秒同步一次。
-          <strong>不要写证件号、密码等敏感信息</strong>；多人同时编辑时，以最后一次保存为准。
+          打开这个页面的朋友需要输入你们约定的密码，才能看到同一张便签。修改会自动保存，约 3 秒同步一次。
+          <strong>密码不要和链接放在同一个地方</strong>；多人同时编辑时，以最后一次保存为准。
         </p>
 
         <div class="shared-remote-banner" id="sharedRemoteBanner" role="status" aria-live="polite" hidden>
@@ -4195,7 +4257,18 @@
             disabled
             placeholder="一起写点什么：&#10;· 出发前谁负责买什么&#10;· 集合时间、酒店地址、备用路线&#10;· 这趟旅行一定要一起做的事"
           ></textarea>
-          <div class="shared-cover" id="sharedCover">
+          <div class="shared-cover shared-lock" id="sharedLock">
+            <span class="cover-icon" aria-hidden="true"><svg class="icon"><use href="#i-lock"/></svg></span>
+            <h4>这张共享便签已上锁</h4>
+            <p>输入你和朋友约定的密码，才能查看和编辑。</p>
+            <form class="shared-unlock-form" id="sharedUnlockForm">
+              <label class="sr-only" for="sharedPassword">共享备忘录密码</label>
+              <input class="shared-password-input" id="sharedPassword" type="password" maxlength="80" autocomplete="current-password" placeholder="输入共享密码">
+              <button class="shared-unlock-btn" type="submit">解锁</button>
+            </form>
+            <p class="shared-lock-error" id="sharedLockError" role="alert" hidden></p>
+          </div>
+          <div class="shared-cover" id="sharedCover" hidden>
             <span class="cover-icon" aria-hidden="true"><svg class="icon"><use href="#i-cloud"/></svg></span>
             <h4 id="sharedCoverTitle">正在连接共享备忘录…</h4>
             <p id="sharedCoverText">第一次连接可能需要几秒，请稍等。</p>
@@ -4204,18 +4277,18 @@
         </div>
 
         <div class="shared-foot">
-          <span class="shared-sync" id="sharedSync" data-state="connecting">
+          <span class="shared-sync" id="sharedSync" data-state="locked">
             <span class="shared-dot" aria-hidden="true"></span>
-            <span id="sharedStatusText">正在读取云端内容…</span>
+            <span id="sharedStatusText">已上锁 · 输入密码后读取共享内容</span>
           </span>
-          <span class="shared-saved-at" id="sharedUpdated">自动同步 · 每 3 秒检查</span>
+          <span class="shared-saved-at" id="sharedUpdated">密码保护 · 请单独告诉朋友密码</span>
           <span class="shared-char" id="sharedChar">0 字</span>
         </div>
       </div>
     </section>
 
     <footer class="site-foot">
-      <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬<span class="site-version">v1.2</span></p>
+      <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬<span class="site-version">v1.3</span></p>
       <p>Made with <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg> for careful travelers · 个人笔记留在浏览器，共享备忘录保存在云端</p>
     </footer>
   </div>
@@ -4230,7 +4303,7 @@
       const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
       const NOTES_KEY = 'travel-simulator-desuwa-notes-v1';
-      const SHARED_MEMO_URL = 'https://rlzmuzvmfkcjlwkeapjo.supabase.co/rest/v1/shared_memo';
+      const SHARED_MEMO_API = 'https://rlzmuzvmfkcjlwkeapjo.supabase.co/rest/v1';
       const SHARED_MEMO_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsem11enZtZmtjamx3a2VhcGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1Njk3NjgsImV4cCI6MjEwOTE0NTc2OH0.fpQBWlSlXndtIDe3hKmilOpTB2LqOEyeeWc9O0RlX0I';
       const SHARED_MEMO_POLL_MS = 3000;
       const SHARED_MEMO_SAVE_DELAY = 700;
@@ -4907,9 +4980,14 @@
       const sharedCover = $('#sharedCover');
       const sharedCoverTitle = $('#sharedCoverTitle');
       const sharedCoverText = $('#sharedCoverText');
+      const sharedLock = $('#sharedLock');
+      const sharedUnlockForm = $('#sharedUnlockForm');
+      const sharedPassword = $('#sharedPassword');
+      const sharedLockError = $('#sharedLockError');
       const sharedRetryBtn = $('#sharedRetryBtn');
       const sharedCopyBtn = $('#sharedCopyBtn');
       const sharedRefreshBtn = $('#sharedRefreshBtn');
+      const sharedLockBtn = $('#sharedLockBtn');
       const sharedRemoteBanner = $('#sharedRemoteBanner');
       const sharedLoadRemote = $('#sharedLoadRemote');
       const notes = $('#notes');
@@ -4933,6 +5011,7 @@
         loading: false,
         saving: false,
         dirty: false,
+        password: '',
         lastRemoteContent: '',
         lastRemoteAt: '',
         pendingRemoteContent: '',
@@ -5725,7 +5804,12 @@
         sharedStatusText.textContent = footText || headerText;
       }
 
+      function updateSharedCharCount() {
+        sharedChar.textContent = `${sharedMemo.value.length} 字`;
+      }
+
       function showSharedCover(title, text, canRetry) {
+        sharedLock.hidden = true;
         sharedCover.hidden = false;
         sharedCoverTitle.textContent = title;
         sharedCoverText.textContent = text;
@@ -5735,8 +5819,43 @@
 
       function hideSharedCover() {
         sharedCover.hidden = true;
+        sharedLock.hidden = true;
         sharedMemo.disabled = false;
         sharedRetryBtn.hidden = true;
+        sharedLockBtn.hidden = false;
+      }
+
+      function lockSharedMemo(message = '') {
+        window.clearInterval(sharedMemoState.pollTimer);
+        sharedMemoState.pollTimer = null;
+        window.clearTimeout(sharedMemoState.saveTimer);
+        sharedMemoState.saveTimer = null;
+        window.clearTimeout(sharedMemoState.retryTimer);
+        sharedMemoState.retryTimer = null;
+        sharedMemoState.loaded = false;
+        sharedMemoState.loading = false;
+        sharedMemoState.saving = false;
+        sharedMemoState.dirty = false;
+        sharedMemoState.password = '';
+        sharedMemoState.lastRemoteContent = '';
+        sharedMemoState.lastRemoteAt = '';
+        sharedMemoState.pendingRemoteContent = '';
+        sharedMemoState.pendingRemoteAt = '';
+        sharedMemo.value = '';
+        sharedMemo.disabled = true;
+        sharedRemoteBanner.hidden = true;
+        sharedCover.hidden = true;
+        sharedLock.hidden = false;
+        sharedLockBtn.hidden = true;
+        sharedLockError.textContent = message;
+        sharedLockError.hidden = !message;
+        sharedPassword.value = '';
+        updateSharedCharCount();
+        setSharedStatus('locked', '已上锁', '已上锁 · 输入密码后读取共享内容');
+        sharedUpdated.textContent = message ? '请重新输入密码' : '密码保护 · 请单独告诉朋友密码';
+        if (message) {
+          window.setTimeout(() => sharedPassword.focus(), 60);
+        }
       }
 
       function showRemoteMemoBanner(content, updatedAt) {
@@ -5758,27 +5877,59 @@
         sharedUpdated.textContent = time ? `云端更新 · ${time}` : '自动同步 · 每 3 秒检查';
       }
 
+      async function parseSharedResponse(response) {
+        if (response.ok) return response.json();
+        let message = '';
+        try {
+          const body = await response.clone().json();
+          message = String(body.message || body.hint || body.error_description || '').toLowerCase();
+        } catch (error) {
+          // The response may not contain JSON.
+        }
+
+        if (message.includes('invalid_password')) {
+          lockSharedMemo('密码不正确，请再试一次。');
+          const error = new Error('invalid_password');
+          error.code = 'invalid_password';
+          throw error;
+        }
+        if (message.includes('password_not_set')) {
+          lockSharedMemo('还没有设置共享密码，请先在 Supabase 里完成密码设置。');
+          const error = new Error('password_not_set');
+          error.code = 'password_not_set';
+          throw error;
+        }
+        throw new Error(message || `Supabase HTTP ${response.status}`);
+      }
+
       async function fetchSharedMemo(options = {}) {
-        if (!SHARED_MEMO_URL || !SHARED_MEMO_ANON_KEY) {
+        if (!SHARED_MEMO_API || !SHARED_MEMO_ANON_KEY) {
           showSharedCover('共享备忘录尚未配置', '需要 Supabase 项目地址和公开 anon key 才能连接。', false);
           setSharedStatus('error', '未配置', '等待配置后端');
-          return;
+          return false;
         }
-        if (sharedMemoState.loading) return;
+        if (!sharedMemoState.password) {
+          lockSharedMemo();
+          return false;
+        }
+        if (sharedMemoState.loading) return false;
+        const passwordUsed = sharedMemoState.password;
         sharedMemoState.loading = true;
 
         if (!sharedMemoState.loaded) {
-          showSharedCover('正在连接共享备忘录…', '正在从云端读取你和朋友的内容。', false);
-          setSharedStatus('connecting', '连接中…', '正在读取云端内容…');
+          showSharedCover('正在验证密码…', '正在从云端读取你和朋友的内容。', false);
+          setSharedStatus('connecting', '验证中…', '正在验证密码并读取云端内容…');
         }
 
         try {
-          const response = await fetch(`${SHARED_MEMO_URL}?id=eq.1&select=content,updated_at`, {
-            headers: sharedMemoHeaders(),
+          const response = await fetch(`${SHARED_MEMO_API}/rpc/read_shared_memo`, {
+            method: 'POST',
+            headers: sharedMemoHeaders(true),
+            body: JSON.stringify({ p_password: passwordUsed }),
             cache: 'no-store'
           });
-          if (!response.ok) throw new Error(`Supabase HTTP ${response.status}`);
-          const rows = await response.json();
+          if (sharedMemoState.password !== passwordUsed) return false;
+          const rows = await parseSharedResponse(response);
           if (!Array.isArray(rows) || !rows.length) throw new Error('没有找到共享备忘录记录');
           const memo = rows[0];
           const content = typeof memo.content === 'string' ? memo.content : '';
@@ -5804,43 +5955,43 @@
             }
           }
           if (options.manual) showToast('已检查云端最新内容');
+          return true;
         } catch (error) {
+          if (error.code === 'invalid_password' || error.code === 'password_not_set') {
+            return false;
+          }
           console.error('Shared memo fetch failed:', error);
           if (!sharedMemoState.loaded) {
-            showSharedCover('共享备忘录暂时连不上', '请检查网络连接，或确认 Supabase 项目和 RLS 规则仍然正常。', true);
+            showSharedCover('共享备忘录暂时连不上', '请检查网络连接，或确认 Supabase 函数和密码设置仍然正常。', true);
             setSharedStatus('error', '连接失败', '无法读取云端内容');
             sharedUpdated.textContent = '连接失败，可点「重新连接」';
           } else {
             setSharedStatus('error', '同步中断', '网络不稳，正在等待下次同步');
             sharedUpdated.textContent = '本次同步失败，稍后自动重试';
           }
+          return false;
         } finally {
           sharedMemoState.loading = false;
         }
       }
 
       async function saveSharedMemo() {
-        if (!sharedMemoState.loaded || sharedMemoState.saving || !sharedMemoState.dirty) return;
+        if (!sharedMemoState.loaded || sharedMemoState.saving || !sharedMemoState.dirty || !sharedMemoState.password) return;
         window.clearTimeout(sharedMemoState.saveTimer);
         sharedMemoState.saveTimer = null;
         sharedMemoState.saving = true;
         const value = sharedMemo.value;
+        const passwordUsed = sharedMemoState.password;
         setSharedStatus('saving', '保存中…', '正在保存到云端…');
 
         try {
-          const response = await fetch(`${SHARED_MEMO_URL}?id=eq.1`, {
-            method: 'PATCH',
-            headers: {
-              ...sharedMemoHeaders(true),
-              Prefer: 'return=representation'
-            },
-            body: JSON.stringify({
-              content: value,
-              updated_at: new Date().toISOString()
-            })
+          const response = await fetch(`${SHARED_MEMO_API}/rpc/write_shared_memo`, {
+            method: 'POST',
+            headers: sharedMemoHeaders(true),
+            body: JSON.stringify({ p_password: passwordUsed, p_content: value })
           });
-          if (!response.ok) throw new Error(`Supabase HTTP ${response.status}`);
-          const rows = await response.json();
+          if (sharedMemoState.password !== passwordUsed) return;
+          const rows = await parseSharedResponse(response);
           if (!Array.isArray(rows) || !rows.length) throw new Error('没有找到要更新的共享备忘录');
           const saved = rows[0];
           const savedAt = saved.updated_at || new Date().toISOString();
@@ -5856,6 +6007,7 @@
             scheduleSharedSave();
           }
         } catch (error) {
+          if (error.code === 'invalid_password' || error.code === 'password_not_set') return;
           console.error('Shared memo save failed:', error);
           setSharedStatus('error', '保存失败', '网络不稳，稍后自动重试');
           sharedUpdated.textContent = '保存失败，正在等待重试';
@@ -5880,7 +6032,7 @@
       function startSharedPolling() {
         if (sharedMemoState.pollTimer) return;
         sharedMemoState.pollTimer = window.setInterval(() => {
-          if (document.hidden || sharedMemoState.loading || sharedMemoState.saving) return;
+          if (!sharedMemoState.loaded || document.hidden || sharedMemoState.loading || sharedMemoState.saving) return;
           fetchSharedMemo();
         }, SHARED_MEMO_POLL_MS);
       }
@@ -5900,7 +6052,7 @@
             document.execCommand('copy');
             helper.remove();
           }
-          showToast('共享链接已复制，发给朋友吧');
+          showToast('共享链接已复制，记得把密码单独告诉朋友');
         } catch (error) {
           window.prompt('复制这个共享链接发给朋友：', url);
         }
@@ -5915,6 +6067,22 @@
         showToast('已载入朋友的最新内容');
       }
 
+      sharedUnlockForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const password = sharedPassword.value;
+        if (!password) {
+          sharedLockError.textContent = '请输入密码。';
+          sharedLockError.hidden = false;
+          sharedPassword.focus();
+          return;
+        }
+        sharedLockError.hidden = true;
+        sharedLock.hidden = true;
+        sharedMemoState.password = password;
+        sharedPassword.value = '';
+        await fetchSharedMemo({ manual: true });
+      });
+
       sharedMemo.addEventListener('input', () => {
         updateSharedCharCount();
         scheduleSharedSave();
@@ -5925,8 +6093,28 @@
       });
 
       sharedCopyBtn.addEventListener('click', copySharedMemoLink);
-      sharedRefreshBtn.addEventListener('click', () => fetchSharedMemo({ manual: true }));
-      sharedRetryBtn.addEventListener('click', () => fetchSharedMemo({ manual: true }));
+      sharedRefreshBtn.addEventListener('click', () => {
+        if (!sharedMemoState.password) {
+          sharedLock.hidden = false;
+          sharedCover.hidden = true;
+          sharedPassword.focus();
+          setSharedStatus('locked', '已上锁', '输入密码后读取共享内容');
+          return;
+        }
+        fetchSharedMemo({ manual: true });
+      });
+      sharedRetryBtn.addEventListener('click', () => {
+        if (!sharedMemoState.password) {
+          lockSharedMemo();
+          return;
+        }
+        fetchSharedMemo({ manual: true });
+      });
+      sharedLockBtn.addEventListener('click', () => {
+        if (sharedMemoState.dirty && !window.confirm('还有修改没有保存，锁定后会丢失。仍然锁定吗？')) return;
+        lockSharedMemo();
+        showToast('共享备忘录已锁定');
+      });
       sharedLoadRemote.addEventListener('click', loadPendingRemoteMemo);
 
       document.addEventListener('visibilitychange', () => {
@@ -5938,16 +6126,13 @@
       });
 
       window.addEventListener('beforeunload', () => {
-        if (!sharedMemoState.loaded || !sharedMemoState.dirty) return;
-        fetch(`${SHARED_MEMO_URL}?id=eq.1`, {
-          method: 'PATCH',
-          headers: {
-            ...sharedMemoHeaders(true),
-            Prefer: 'return=representation'
-          },
+        if (!sharedMemoState.loaded || !sharedMemoState.dirty || !sharedMemoState.password) return;
+        fetch(`${SHARED_MEMO_API}/rpc/write_shared_memo`, {
+          method: 'POST',
+          headers: sharedMemoHeaders(true),
           body: JSON.stringify({
-            content: sharedMemo.value,
-            updated_at: new Date().toISOString()
+            p_password: sharedMemoState.password,
+            p_content: sharedMemo.value
           }),
           keepalive: true
         });
@@ -5956,14 +6141,13 @@
       function initSharedMemo() {
         if (!sharedMemo) return;
         updateSharedCharCount();
-        if (!SHARED_MEMO_URL || !SHARED_MEMO_ANON_KEY) {
-          showSharedCover('共享备忘录尚未配置', '需要 Supabase 项目地址和公开 anon key 才能连接。', false);
-          setSharedStatus('error', '未配置', '等待配置后端');
+        if (!SHARED_MEMO_API || !SHARED_MEMO_ANON_KEY) {
+          lockSharedMemo('共享备忘录尚未配置，请先完成 Supabase 配置。');
           return;
         }
         if (sharedMemoState.initialized) return;
         sharedMemoState.initialized = true;
-        fetchSharedMemo();
+        lockSharedMemo();
       }
 
       function updateCharCount() {
