@@ -1,0 +1,5361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fdf6e9">
+  <title>旅游模拟器desuwa · 从订票到回家，全流程预演</title>
+  <meta name="description" content="第一视角旅游全流程模拟器：从几个月前买票订房、打包出发，到转机、入境、当地生活与返程退税，用细致到尴尬的检查清单和冷门突发状况，帮你把真实旅程先走一遍。">
+  <style>
+    :root {
+      --ink: #483631;
+      --ink-soft: #78615a;
+      --ink-faint: #a08b81;
+      --paper: #fffaf1;
+      --paper-deep: #fff3df;
+      --cream: #fff5e5;
+      --peach: #ff9d85;
+      --peach-deep: #e9755d;
+      --butter: #ffd76c;
+      --mint: #a9ddc7;
+      --sky: #a9d7e7;
+      --pink: #f5b6c7;
+      --lilac: #cabdf0;
+      --line: rgba(72, 54, 49, 0.17);
+      --shadow: 7px 8px 0 rgba(72, 54, 49, 0.12);
+      --shadow-small: 3px 3px 0 rgba(72, 54, 49, 0.16);
+      --display: "YouYuan", "幼圆", "Microsoft YaHei", "PingFang SC", sans-serif;
+      --body: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Trebuchet MS", sans-serif;
+      --hand: "KaiTi", "STKaiti", "Kaiti SC", "Segoe Print", cursive;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--body);
+      background-color: #fdf6e9;
+      background-image: radial-gradient(circle at 1px 1px, rgba(72, 54, 49, 0.075) 1px, transparent 0);
+      background-size: 22px 22px;
+      min-width: 320px;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    body::before {
+      width: 430px;
+      height: 430px;
+      left: -190px;
+      top: -170px;
+      background: var(--pink);
+      opacity: 0.2;
+    }
+
+    body::after {
+      width: 500px;
+      height: 500px;
+      right: -250px;
+      top: 220px;
+      background: var(--sky);
+      opacity: 0.2;
+    }
+
+    ::selection {
+      background: var(--butter);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+    }
+
+    button,
+    summary {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    summary:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--peach-deep);
+      outline-offset: 3px;
+    }
+
+    a { color: inherit; }
+
+    .icon {
+      width: 1em;
+      height: 1em;
+      display: block;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .svg-sprite {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    [hidden] { display: none !important; }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 0 26px 30px;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 42px;
+      align-items: center;
+      min-height: 365px;
+      padding: 42px 0 34px;
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 13px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: rgba(255, 250, 241, 0.82);
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.1);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-index {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      background: var(--butter);
+      font-family: var(--display);
+      font-size: 8px;
+      letter-spacing: 0;
+    }
+
+    .eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--peach-deep);
+      box-shadow: 0 0 0 3px rgba(233, 117, 93, 0.16);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      margin: 20px 0 14px;
+      font-family: var(--display);
+      line-height: 0.98;
+      letter-spacing: -0.07em;
+    }
+
+    .brand-cn {
+      font-size: clamp(3.35rem, 7.3vw, 5.65rem);
+      font-weight: 900;
+      color: var(--ink);
+      white-space: nowrap;
+      text-shadow: 3px 3px 0 var(--paper), 6px 6px 0 rgba(245, 182, 199, 0.65);
+    }
+
+    .brand-en {
+      position: relative;
+      display: inline-block;
+      padding: 0 10px 3px;
+      font-family: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive;
+      font-size: clamp(1.95rem, 3.75vw, 3.15rem);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      color: var(--peach-deep);
+      transform: rotate(-3deg) translateY(-3px);
+      background: linear-gradient(transparent 63%, rgba(245, 182, 199, 0.72) 63%, rgba(245, 182, 199, 0.72) 91%, transparent 91%);
+      white-space: nowrap;
+    }
+
+    .brand-en::after {
+      content: "✦";
+      position: absolute;
+      top: -20px;
+      right: -14px;
+      font-family: var(--body);
+      font-size: 19px;
+      color: var(--peach-deep);
+      transform: rotate(13deg);
+    }
+
+    .hero-sub {
+      max-width: 35em;
+      margin: 0;
+      font-size: 16.5px;
+      line-height: 1.9;
+      color: var(--ink-soft);
+      letter-spacing: 0.015em;
+    }
+
+    .hero-sub strong {
+      color: var(--ink);
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .hero-sub strong::after {
+      content: "";
+      position: absolute;
+      left: -1px;
+      right: -1px;
+      bottom: 1px;
+      height: 7px;
+      background: var(--butter);
+      z-index: -1;
+      border-radius: 2px;
+      opacity: 0.7;
+    }
+
+    .hero-chips {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border: 1.5px solid rgba(72, 54, 49, 0.72);
+      border-radius: 8px;
+      background: rgba(255, 250, 241, 0.7);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      transform: rotate(-1deg);
+    }
+
+    .hero-chip:nth-child(2) { transform: rotate(1.5deg); background: rgba(255, 215, 108, 0.35); }
+    .hero-chip:nth-child(3) { transform: rotate(-0.5deg); background: rgba(169, 221, 199, 0.3); }
+
+    .hero-chip .icon {
+      font-size: 12px;
+      color: var(--peach-deep);
+    }
+
+    .hero-mission {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      max-width: 36em;
+      margin: 14px 0 0;
+      padding: 8px 11px;
+      border-left: 3px solid var(--peach);
+      border-radius: 0 8px 8px 0;
+      background: rgba(255, 255, 255, 0.42);
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.65;
+    }
+
+    .mission-tag {
+      flex: none;
+      padding: 1px 6px;
+      border: 1px solid rgba(72, 54, 49, 0.28);
+      border-radius: 999px;
+      background: var(--butter);
+      color: var(--ink);
+      font-size: 8.5px;
+      font-weight: 900;
+      line-height: 1.7;
+      white-space: nowrap;
+    }
+
+    .hero-art {
+      position: relative;
+      width: 100%;
+      min-height: 284px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      isolation: isolate;
+    }
+
+    .hero-art::before {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 47% 53% 52% 48% / 45% 44% 56% 55%;
+      background: var(--butter);
+      opacity: 0.28;
+      transform: rotate(12deg);
+      z-index: -2;
+    }
+
+    .postcard {
+      position: relative;
+      z-index: 2;
+      width: min(320px, 88%);
+      padding: 14px;
+      border: 2px solid var(--ink);
+      border-radius: 15px;
+      background: var(--paper);
+      box-shadow: 8px 9px 0 rgba(72, 54, 49, 0.14);
+      transform: rotate(2.8deg);
+      animation: postcard-bob 6s ease-in-out infinite;
+    }
+
+    .postcard::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      width: 92px;
+      height: 24px;
+      transform: translateX(-50%) rotate(-2deg);
+      background: rgba(255, 215, 108, 0.75);
+      border-left: 1px dashed rgba(72, 54, 49, 0.27);
+      border-right: 1px dashed rgba(72, 54, 49, 0.27);
+      z-index: 3;
+    }
+
+    .postcard-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .postcard-kicker {
+      display: block;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      color: var(--peach-deep);
+      margin-bottom: 3px;
+    }
+
+    .postcard-title {
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .postcard-stamp {
+      width: 53px;
+      height: 62px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      border: 1.5px dashed var(--ink);
+      border-radius: 3px;
+      background: #fffdf7;
+      transform: rotate(5deg);
+      flex: none;
+    }
+
+    .stamp-sun {
+      font-size: 21px;
+      line-height: 1;
+      color: var(--peach-deep);
+      margin-bottom: 3px;
+    }
+
+    .postcard-stamp b {
+      font-size: 7px;
+      letter-spacing: 0.1em;
+      line-height: 1;
+    }
+
+    .postcard-stamp small {
+      font-size: 6px;
+      letter-spacing: 0.16em;
+      color: var(--ink-faint);
+      line-height: 1;
+    }
+
+    .postcard-scene {
+      position: relative;
+      height: 105px;
+      overflow: hidden;
+      border: 1.5px solid var(--ink);
+      border-radius: 9px;
+      background: var(--sky);
+    }
+
+    .postcard-scene svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .postcard-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 2px 1px;
+      margin-top: 4px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .postcard-bottom small {
+      display: block;
+      font-size: 6px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: var(--ink-faint);
+      margin-bottom: 2px;
+    }
+
+    .postcard-bottom strong {
+      display: block;
+      font-size: 13px;
+      letter-spacing: 0.09em;
+    }
+
+    .barcode {
+      width: 79px;
+      height: 25px;
+      opacity: 0.76;
+      background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 5px, var(--ink) 5px 6px, transparent 6px 9px);
+    }
+
+    .hero-sticky {
+      position: absolute;
+      z-index: 3;
+      right: -8px;
+      bottom: 0;
+      width: 156px;
+      padding: 14px 13px 12px;
+      background: #fff0b9;
+      border: 1.5px solid var(--ink);
+      box-shadow: 3px 4px 0 rgba(72, 54, 49, 0.16);
+      transform: rotate(-5deg);
+      font-family: var(--hand);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .hero-sticky::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: 42%;
+      width: 46px;
+      height: 13px;
+      background: rgba(255, 250, 241, 0.72);
+      transform: rotate(2deg);
+    }
+
+    .hero-sticky span {
+      display: block;
+    }
+
+    .hero-sticky .heart {
+      color: var(--peach-deep);
+      font-family: var(--body);
+      font-size: 12px;
+    }
+
+    .hero-pin {
+      position: absolute;
+      left: -7px;
+      top: 10px;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--pink);
+      color: var(--ink);
+      font-size: 23px;
+      transform: rotate(-12deg);
+      box-shadow: 2px 3px 0 rgba(72, 54, 49, 0.13);
+    }
+
+    .hero-spark {
+      position: absolute;
+      color: var(--peach-deep);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .hero-spark.one { right: 8px; top: 3px; }
+    .hero-spark.two { left: 16px; bottom: 28px; font-size: 13px; color: var(--ink-soft); }
+
+    @keyframes postcard-bob {
+      0%, 100% { transform: rotate(2.8deg) translateY(0); }
+      50% { transform: rotate(2.1deg) translateY(-5px); }
+    }
+
+    /* ---------- Section headings ---------- */
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 28px;
+      margin: 42px 0 17px;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-number {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--paper);
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.13);
+      font-family: var(--display);
+      font-size: 12px;
+      font-weight: 900;
+      transform: rotate(-5deg);
+    }
+
+    .section-number--planner { background: var(--butter); }
+    .section-number--notes { background: var(--lilac); }
+
+    .section-kicker {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(23px, 2.8vw, 31px);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .section-note {
+      max-width: 350px;
+      margin: 0 2px 2px 0;
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: var(--ink-soft);
+      text-align: right;
+    }
+
+    .section-note .scribble {
+      font-family: var(--hand);
+      font-size: 14px;
+      color: var(--peach-deep);
+    }
+
+    /* ---------- Planner ---------- */
+    .planner-card {
+      position: relative;
+      overflow: hidden;
+      padding: 23px 26px 21px;
+      border: 2px solid var(--ink);
+      border-radius: 26px;
+      background: rgba(255, 251, 243, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .planner-card::before {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      right: -72px;
+      top: -100px;
+      border-radius: 50%;
+      background: var(--butter);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .planner-card::after {
+      content: "";
+      position: absolute;
+      width: 95px;
+      height: 95px;
+      right: 95px;
+      bottom: -65px;
+      border-radius: 50%;
+      background: var(--mint);
+      opacity: 0.24;
+      pointer-events: none;
+    }
+
+    .planner-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 17px;
+    }
+
+    .mini-eyebrow {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      color: var(--peach-deep);
+    }
+
+    .planner-head h3 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .planner-stamp {
+      padding: 5px 10px;
+      border: 1.5px dashed rgba(72, 54, 49, 0.55);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.55);
+      transform: rotate(3deg);
+      font-size: 8px;
+      line-height: 1.55;
+      letter-spacing: 0.12em;
+      font-weight: 800;
+      text-align: center;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .planner-stamp b {
+      color: var(--peach-deep);
+      font-size: 9px;
+    }
+
+    .destination-form {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 11px;
+    }
+
+    .destination-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 62px;
+      padding: 0 9px 0 17px;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      background: var(--cream);
+      box-shadow: inset 0 -3px 0 rgba(72, 54, 49, 0.06);
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .destination-field:focus-within {
+      background: #fffdf8;
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 4px rgba(255, 157, 133, 0.28), inset 0 -3px 0 rgba(72, 54, 49, 0.04);
+    }
+
+    .destination-field > .icon {
+      font-size: 24px;
+      color: var(--peach-deep);
+    }
+
+    .destination-field input {
+      flex: 1;
+      min-width: 0;
+      height: 58px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      font-size: 17.5px;
+      font-weight: 800;
+      letter-spacing: 0.015em;
+    }
+
+    .destination-field input::placeholder {
+      color: #aa948a;
+      font-weight: 600;
+      font-size: 14.5px;
+      opacity: 1;
+    }
+
+    .random-dest {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 39px;
+      padding: 0 10px;
+      border: 1.5px solid rgba(72, 54, 49, 0.48);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .random-dest .icon { font-size: 15px; }
+
+    .random-dest:hover {
+      background: var(--butter);
+      border-color: var(--ink);
+      color: var(--ink);
+      transform: rotate(-2deg);
+    }
+
+    .start-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 62px;
+      padding: 0 24px;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      background: var(--peach);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      font-family: var(--display);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .start-btn .icon {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    .start-btn:hover {
+      background: #ffad98;
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    .start-btn:hover .icon { transform: translateX(3px); }
+    .start-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+
+    .quick-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .quick-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 2px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink-faint);
+      letter-spacing: 0.02em;
+    }
+
+    .quick-label .icon {
+      font-size: 12px;
+      color: var(--peach-deep);
+    }
+
+    .dest-chip {
+      padding: 6px 11px;
+      border: 1.5px solid rgba(72, 54, 49, 0.35);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      font-weight: 700;
+      line-height: 1.2;
+      transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .dest-chip:hover {
+      border-color: var(--ink);
+      background: var(--butter);
+      color: var(--ink);
+      transform: translateY(-2px) rotate(-2deg);
+    }
+
+    .planner-hint {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 15px;
+      padding-top: 13px;
+      border-top: 1px dashed var(--line);
+      font-family: var(--hand);
+      font-size: 13.5px;
+      color: var(--ink-faint);
+    }
+
+    .planner-hint .icon {
+      font-size: 14px;
+      color: var(--peach-deep);
+    }
+
+    .shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(2px); }
+    }
+
+    /* ---------- Simulation ---------- */
+    .simulation-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      align-items: start;
+      gap: 18px;
+      margin-top: 18px;
+      scroll-margin-top: 18px;
+    }
+
+    .paper-panel {
+      position: relative;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .paper-panel::before {
+      content: "";
+      position: absolute;
+      top: -37px;
+      right: -26px;
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: var(--mint);
+      opacity: 0.22;
+      pointer-events: none;
+    }
+
+    .event-panel {
+      background: #fffaf4;
+    }
+
+    .event-panel::before { background: var(--lilac); opacity: 0.2; }
+
+    .panel-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 19px 21px 15px;
+      border-bottom: 1.5px dashed var(--line);
+    }
+
+    .panel-eyebrow {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.21em;
+      color: var(--peach-deep);
+    }
+
+    .event-panel .panel-eyebrow { color: #826eaa; }
+
+    .panel-head h3 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.35;
+    }
+
+    .route-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+      padding-top: 2px;
+    }
+
+    .route-meta span {
+      padding: 4px 8px;
+      border: 1px solid rgba(72, 54, 49, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--ink-soft);
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* Empty route */
+    .empty-route {
+      min-height: 408px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 26px 32px;
+      text-align: center;
+    }
+
+    .empty-route-art {
+      width: min(100%, 400px);
+      margin-bottom: 4px;
+    }
+
+    .empty-route-art svg { display: block; width: 100%; height: auto; }
+
+    .empty-route h4 {
+      margin: 0 0 7px;
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .empty-route p {
+      max-width: 30em;
+      margin: 0;
+      color: var(--ink-faint);
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    /* Route */
+    .route-list {
+      padding: 9px 20px 2px;
+    }
+
+    .route-step {
+      display: grid;
+      grid-template-columns: 41px minmax(0, 1fr);
+      gap: 12px;
+      position: relative;
+      padding-bottom: 12px;
+      animation: rise-in 0.45s backwards;
+      animation-delay: calc(var(--i, 0) * 65ms);
+    }
+
+    .route-step:last-child { padding-bottom: 2px; }
+
+    .route-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding-top: 7px;
+    }
+
+    .route-rail::after {
+      content: "";
+      flex: 1;
+      width: 0;
+      margin-top: 5px;
+      border-left: 1.5px dashed rgba(72, 54, 49, 0.22);
+    }
+
+    .route-step:last-child .route-rail::after { display: none; }
+
+    .route-dot {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--dot, var(--butter));
+      color: var(--ink);
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.13);
+      font-size: 16px;
+    }
+
+    .route-card {
+      padding: 11px 13px 12px;
+      border: 1.5px solid rgba(72, 54, 49, 0.74);
+      border-radius: 13px;
+      background: var(--tint, var(--cream));
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .route-card:hover {
+      transform: translateY(-2px) rotate(-0.15deg);
+      box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.1);
+    }
+
+    .route-meta-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+
+    .route-day {
+      color: var(--ink-soft);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .route-tag {
+      padding: 2px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink-soft);
+      font-size: 8.5px;
+      font-weight: 800;
+      line-height: 1.6;
+    }
+
+    .route-card h4 {
+      margin: 0 0 3px;
+      font-size: 14.5px;
+      font-weight: 900;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    .route-card p {
+      margin: 0;
+      color: #705c54;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .route-footnote {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 8px 22px 17px;
+      color: var(--ink-faint);
+      font-family: var(--hand);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .route-footnote .icon {
+      margin-top: 2px;
+      font-size: 13px;
+      color: var(--peach-deep);
+    }
+
+    /* Event panel controls */
+    .reroll-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: none;
+      margin-top: 2px;
+      padding: 6px 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.38);
+      border-radius: 8px;
+      background: #fffdf7;
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .reroll-btn .icon { font-size: 13px; }
+    .reroll-btn:hover:not(:disabled) { background: var(--lilac); border-color: var(--ink); color: var(--ink); transform: rotate(-2deg); }
+    .reroll-btn:disabled { opacity: 0.4; }
+    .reroll-btn.is-spinning .icon { animation: spin 0.45s ease; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .event-progress {
+      padding: 14px 20px 0;
+    }
+
+    .progress-copy {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--ink-soft);
+    }
+
+    .progress-copy strong {
+      color: var(--peach-deep);
+      font-family: var(--display);
+      font-size: 13px;
+    }
+
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: #fffdf8;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: repeating-linear-gradient(45deg, var(--peach) 0 6px, #ffb7a3 6px 12px);
+      transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-hint {
+      margin: 6px 0 0;
+      font-family: var(--hand);
+      font-size: 11.5px;
+      color: var(--ink-faint);
+    }
+
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      padding: 12px 17px 18px;
+    }
+
+    .event-card {
+      position: relative;
+      padding: 12px 13px 11px;
+      border: 1.5px solid rgba(72, 54, 49, 0.8);
+      border-radius: 16px;
+      background: #fffdf9;
+      box-shadow: var(--shadow-small);
+      animation: rise-in 0.45s backwards;
+      animation-delay: calc(var(--i, 0) * 65ms);
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+
+    .event-card:nth-child(1) { transform: rotate(-0.25deg); }
+    .event-card:nth-child(2) { transform: rotate(0.35deg); }
+    .event-card:nth-child(3) { transform: rotate(-0.15deg); }
+
+    .event-card:hover { transform: rotate(0) translateY(-2px); }
+
+    .event-card.is-solved {
+      border-color: #6ebd9e;
+      background: #f7fdf8;
+    }
+
+    .event-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .event-icon {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--butter);
+      font-size: 15px;
+    }
+
+    .event-icon.kind-weather { background: #cfe8f2; }
+    .event-icon.kind-transport { background: #ffe0a1; }
+    .event-icon.kind-money { background: #ffd6a8; }
+    .event-icon.kind-health { background: #ffc6c0; }
+    .event-icon.kind-safety { background: #f6c1ce; }
+    .event-icon.kind-social { background: #d8cef5; }
+    .event-icon.kind-logistics { background: #c4e8d8; }
+
+    .event-cat {
+      flex: 1;
+      color: var(--ink-soft);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+
+    .severity {
+      padding: 2px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.24);
+      border-radius: 999px;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .severity--minor { background: #dff4e9; color: #3e7b62; }
+    .severity--notice { background: #fff0c9; color: #8b681d; }
+    .severity--urgent { background: var(--peach); color: #682b20; }
+
+    .event-card h4 {
+      margin: 0 0 4px;
+      font-size: 14.5px;
+      font-weight: 900;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    .event-card > p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .event-advice {
+      margin-top: 8px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .event-advice summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 1px 2px;
+      color: var(--peach-deep);
+      font-size: 10.5px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    .event-advice summary::-webkit-details-marker { display: none; }
+
+    .event-advice summary .icon {
+      font-size: 13px;
+      transition: transform 0.2s ease;
+    }
+
+    .event-advice[open] summary .icon { transform: rotate(180deg); }
+
+    .advice-body {
+      margin: 5px 0 1px;
+      padding: 8px 10px 7px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--cream);
+      animation: fade-in 0.22s ease;
+    }
+
+    .advice-body ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .advice-body li {
+      position: relative;
+      padding-left: 13px;
+      margin: 2px 0;
+      color: #6d584f;
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .advice-body li::before {
+      content: "✦";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--peach-deep);
+      font-size: 8px;
+      line-height: 1.95;
+    }
+
+    .event-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .note-btn,
+    .solve-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 26px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 800;
+      line-height: 1;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .note-btn {
+      padding: 4px 7px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink-faint);
+    }
+
+    .note-btn .icon { font-size: 12px; }
+    .note-btn:hover { color: var(--peach-deep); background: var(--cream); }
+
+    .solve-btn {
+      padding: 5px 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.4);
+      background: #fffdf8;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .solve-btn .icon { font-size: 12px; }
+    .solve-btn:hover { border-color: var(--ink); background: var(--butter); color: var(--ink); transform: rotate(-1.5deg); }
+    .solve-btn.is-solved { border-color: #69b394; background: var(--mint); color: #244c3d; }
+
+    /* Empty events */
+    .event-empty {
+      min-height: 408px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 22px 34px;
+      text-align: center;
+    }
+
+    .mystery-stack {
+      position: relative;
+      width: 174px;
+      height: 112px;
+      margin-bottom: 16px;
+    }
+
+    .mystery-card {
+      position: absolute;
+      width: 103px;
+      height: 80px;
+      display: grid;
+      place-items: center;
+      border: 1.5px dashed rgba(72, 54, 49, 0.5);
+      border-radius: 12px;
+      background: #fffdf8;
+      color: #bba89c;
+      font-family: var(--display);
+      font-size: 30px;
+      font-weight: 900;
+      box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.09);
+      top: 15px;
+      left: 35px;
+    }
+
+    .mystery-card.m1 { transform: rotate(-13deg) translate(-16px, 4px); background: #fff4dc; }
+    .mystery-card.m2 { transform: rotate(9deg) translate(19px, 0); background: #f3edff; }
+    .mystery-card.m3 { transform: rotate(-2deg); background: #fffdf9; z-index: 2; }
+
+    .mystery-card.m3 .icon {
+      font-size: 23px;
+      color: var(--peach-deep);
+    }
+
+    .event-empty h4 {
+      margin: 0 0 7px;
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .event-empty p {
+      max-width: 26em;
+      margin: 0;
+      color: var(--ink-faint);
+      font-size: 12.5px;
+      line-height: 1.7;
+    }
+
+    .event-empty .tiny-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 12px;
+      padding: 5px 9px;
+      border: 1px dashed var(--line);
+      border-radius: 999px;
+      color: var(--ink-faint);
+      font-family: var(--hand);
+      font-size: 11px;
+      transform: rotate(-1deg);
+    }
+
+    .event-empty .tiny-print .icon { font-size: 11px; color: #9a83c5; }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- Notes ---------- */
+    .notes-section { margin-top: 40px; }
+
+    .notes-paper {
+      position: relative;
+      overflow: hidden;
+      padding: 21px 24px 21px 52px;
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      background: #fffdf7;
+      box-shadow: var(--shadow);
+    }
+
+    .notes-paper::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 23px;
+      bottom: 0;
+      width: 14px;
+      background: radial-gradient(circle, #e8d5c1 0 3px, #fffaf1 3.5px 6px, transparent 6.5px) repeat-y;
+      background-size: 14px 35px;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .notes-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px dashed var(--line);
+    }
+
+    .notes-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .notebook-badge {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid var(--ink);
+      border-radius: 12px;
+      background: var(--lilac);
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.13);
+      transform: rotate(-4deg);
+      font-size: 21px;
+    }
+
+    .notes-kicker {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #826eaa;
+    }
+
+    .notes-head h3 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 5px;
+      color: var(--ink-faint);
+      font-size: 10.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .save-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #78c6a5;
+      box-shadow: 0 0 0 3px rgba(120, 198, 165, 0.16);
+    }
+
+    .save-status[data-state="saving"] .save-dot { background: var(--butter); animation: blink 0.8s ease infinite; }
+    .save-status[data-state="error"] .save-dot { background: var(--peach-deep); }
+
+    @keyframes blink { 50% { opacity: 0.35; } }
+
+    .notes-body {
+      display: grid;
+      grid-template-columns: 192px minmax(0, 1fr);
+      gap: 20px;
+      padding-top: 16px;
+    }
+
+    .note-side {
+      padding-right: 18px;
+      border-right: 1.5px dashed var(--line);
+    }
+
+    .note-side-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 0 0 9px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+    }
+
+    .note-side-label .icon { font-size: 12px; color: #826eaa; }
+
+    .note-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .note-tag {
+      padding: 5px 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.32);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1.2;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .note-tag:nth-child(3n+1) { background: #fff6d6; }
+    .note-tag:nth-child(3n+2) { background: #eef9f3; }
+    .note-tag:nth-child(3n) { background: #f4efff; }
+
+    .note-tag:hover {
+      border-color: var(--ink);
+      transform: translateY(-2px) rotate(-2deg);
+    }
+
+    .note-tip {
+      margin: 10px 0 0;
+      color: var(--ink-faint);
+      font-size: 9.5px;
+      line-height: 1.6;
+    }
+
+    .note-quote {
+      position: relative;
+      margin: 30px 0 0;
+      padding: 2px 0 2px 10px;
+      border-left: 2.5px solid var(--butter);
+      color: var(--peach-deep);
+      font-family: var(--hand);
+      font-size: 14px;
+      line-height: 1.8;
+      transform: rotate(-1deg);
+    }
+
+    .note-quote::before {
+      content: "❞";
+      position: absolute;
+      top: -13px;
+      left: 9px;
+      color: rgba(233, 117, 93, 0.32);
+      font-family: Georgia, serif;
+      font-size: 26px;
+    }
+
+    .note-sheet {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 296px;
+      overflow: hidden;
+      border: 1.5px solid var(--ink);
+      border-radius: 13px;
+      background: #fffef9;
+      box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.08);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .note-sheet.is-flash {
+      animation: note-flash 0.8s ease;
+    }
+
+    @keyframes note-flash {
+      0%, 100% { box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.08); }
+      35% { box-shadow: 0 0 0 5px rgba(255, 215, 108, 0.6), 3px 3px 0 rgba(72, 54, 49, 0.08); }
+    }
+
+    .note-sheet::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 25px;
+      width: 1px;
+      background: rgba(233, 117, 93, 0.3);
+      pointer-events: none;
+    }
+
+    #notes {
+      width: 100%;
+      min-height: 249px;
+      flex: 1;
+      resize: vertical;
+      padding: 15px 18px 15px 35px;
+      border: 0;
+      outline: 0;
+      background-color: #fffef9;
+      background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 30px, rgba(169, 215, 231, 0.34) 30px, rgba(169, 215, 231, 0.34) 31px);
+      background-position: 0 15px;
+      color: var(--ink);
+      font-family: var(--hand);
+      font-size: 17px;
+      line-height: 31px;
+      letter-spacing: 0.02em;
+      caret-color: var(--peach-deep);
+    }
+
+    #notes::placeholder {
+      color: #b8a59a;
+      opacity: 1;
+    }
+
+    #notes:focus-visible {
+      outline: 3px solid var(--butter);
+      outline-offset: -5px;
+    }
+
+    .note-sheet-foot {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px 8px 17px;
+      border-top: 1.5px dashed var(--line);
+      background: rgba(255, 253, 247, 0.92);
+    }
+
+    .char-count {
+      color: var(--ink-faint);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .note-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .quiet-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 8px;
+      border: 1.5px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1.2;
+      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    }
+
+    .quiet-btn .icon { font-size: 12px; }
+    .quiet-btn:hover { border-color: rgba(72, 54, 49, 0.3); background: var(--cream); color: var(--ink); }
+    .quiet-btn.is-armed { border-color: var(--peach-deep); background: #fff0ec; color: #a6422e; }
+
+    .site-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 26px 3px 6px;
+      color: var(--ink-faint);
+      font-size: 10.5px;
+      letter-spacing: 0.03em;
+    }
+
+    .site-foot p { margin: 0; }
+    .site-foot .icon { display: inline-block; vertical-align: -2px; width: 12px; height: 12px; color: var(--peach-deep); }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 26px;
+      padding: 9px 16px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.18);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      transform: translate(-50%, 16px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* ---------- Full journey simulator ---------- */
+    .travel-type-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .type-label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: var(--ink-faint);
+    }
+
+    .segmented {
+      display: inline-flex;
+      gap: 2px;
+      padding: 3px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: #fffdf8;
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.1);
+    }
+
+    .segmented button {
+      min-height: 23px;
+      padding: 3px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink-faint);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+    }
+
+    .segmented button:hover { color: var(--ink); background: var(--cream); }
+
+    .segmented button.is-active {
+      background: var(--mint);
+      color: var(--ink);
+    }
+
+    .segmented button[data-type="abroad"].is-active { background: var(--sky); }
+
+    .type-hint {
+      color: var(--ink-faint);
+      font-family: var(--hand);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .journey-summary {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px 22px;
+      margin-top: 18px;
+      padding: 18px 22px 16px;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      border-radius: 22px;
+      background: linear-gradient(120deg, #fff6df 0%, #fffdf8 55%, #f1fbf6 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .journey-summary::after {
+      content: "";
+      position: absolute;
+      right: -38px;
+      top: -54px;
+      width: 150px;
+      height: 150px;
+      border: 1.5px dashed rgba(72, 54, 49, 0.2);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .journey-summary-main { position: relative; z-index: 1; }
+
+    .journey-kicker {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 4px;
+      color: var(--peach-deep);
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+    }
+
+    .journey-kicker .icon { font-size: 11px; }
+
+    .journey-summary h3 {
+      margin: 0 0 4px;
+      font-family: var(--display);
+      font-size: clamp(20px, 2.4vw, 27px);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      line-height: 1.35;
+    }
+
+    .journey-summary-main p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.65;
+    }
+
+    .journey-local {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: 7px !important;
+      padding: 6px 9px;
+      border: 1px dashed rgba(72, 54, 49, 0.25);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.56);
+      color: var(--ink-soft) !important;
+      font-size: 10.5px !important;
+      line-height: 1.6 !important;
+    }
+
+    .journey-local .icon {
+      margin-top: 2px;
+      color: var(--peach-deep);
+      font-size: 13px;
+    }
+
+    .journey-local b {
+      margin-right: 3px;
+      color: var(--ink);
+      font-size: 9px;
+      letter-spacing: 0.02em;
+    }
+
+    .journey-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 6px;
+      padding: 2px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.32);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      font-size: 8.5px;
+      font-weight: 900;
+      vertical-align: 2px;
+      white-space: nowrap;
+    }
+
+    .journey-stats {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 0 6px;
+    }
+
+    .journey-stat {
+      min-width: 45px;
+      text-align: center;
+    }
+
+    .journey-stat strong {
+      display: block;
+      color: var(--peach-deep);
+      font-family: var(--display);
+      font-size: 25px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .journey-stat span {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink-faint);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .journey-readiness {
+      position: relative;
+      z-index: 1;
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: auto minmax(120px, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .readiness-label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 5px;
+      color: var(--ink-soft);
+      font-size: 9.5px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .readiness-label b {
+      color: var(--ink);
+      font-family: var(--display);
+      font-size: 15px;
+    }
+
+    .readiness-track {
+      height: 8px;
+      overflow: hidden;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: #fffdf8;
+    }
+
+    .readiness-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: repeating-linear-gradient(45deg, var(--mint) 0 7px, #c9f0df 7px 14px);
+      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .readiness-note {
+      color: var(--ink-faint);
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .journey-head-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+      padding-top: 2px;
+    }
+
+    .journey-head-meta span {
+      padding: 4px 8px;
+      border: 1px solid rgba(72, 54, 49, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--ink-soft);
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .empty-journey {
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 22px 22px 28px;
+      text-align: center;
+    }
+
+    .ghost-journey {
+      width: min(100%, 360px);
+      margin-bottom: 15px;
+      padding: 8px 12px;
+      border: 1px dashed rgba(72, 54, 49, 0.22);
+      border-radius: 15px;
+      background: rgba(255, 253, 247, 0.7);
+      text-align: left;
+    }
+
+    .ghost-stage {
+      position: relative;
+      display: grid;
+      grid-template-columns: 27px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      opacity: 0.64;
+    }
+
+    .ghost-stage::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 29px;
+      bottom: -5px;
+      border-left: 1.5px dashed rgba(72, 54, 49, 0.2);
+    }
+
+    .ghost-stage:last-child::before { display: none; }
+
+    .ghost-num {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border: 1.5px dashed rgba(72, 54, 49, 0.4);
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--ink-faint);
+      font-family: var(--display);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .ghost-stage:nth-child(2) .ghost-num { background: #fff4d1; }
+    .ghost-stage:nth-child(3) .ghost-num { background: #fbe9e2; }
+    .ghost-stage:nth-child(4) .ghost-num { background: #e9f6ef; }
+    .ghost-stage:nth-child(5) .ghost-num { background: #e6f2f8; }
+    .ghost-stage:nth-child(6) .ghost-num { background: #f1eafb; }
+    .ghost-stage:nth-child(7) .ghost-num { background: #fff0c8; }
+    .ghost-stage:nth-child(8) .ghost-num { background: #e6f4ec; }
+
+    .ghost-stage b {
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.5;
+      color: var(--ink-soft);
+    }
+
+    .ghost-stage em {
+      color: var(--ink-faint);
+      font-size: 8px;
+      font-style: normal;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .empty-journey h4 {
+      margin: 0 0 6px;
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .empty-journey > p {
+      max-width: 30em;
+      margin: 0;
+      color: var(--ink-faint);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .phase-list { padding: 6px 13px 2px; }
+
+    .phase-card {
+      position: relative;
+      border-bottom: 1px dashed var(--line);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .phase-card:last-child { border-bottom: 0; }
+
+    .phase-card.is-open {
+      margin: 3px 0;
+      border-bottom-color: transparent;
+      border-radius: 14px;
+      background: #fffdf6;
+      box-shadow: inset 0 0 0 1.5px rgba(72, 54, 49, 0.6);
+    }
+
+    .phase-toggle {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 37px minmax(0, 1fr) auto 15px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      border: 0;
+      border-radius: 13px;
+      background: transparent;
+      text-align: left;
+      transition: background 0.16s ease;
+    }
+
+    .phase-toggle:hover { background: rgba(255, 215, 108, 0.13); }
+
+    .phase-dot {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--stage-color, var(--butter));
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.12);
+      font-family: var(--display);
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .phase-heading { min-width: 0; }
+
+    .phase-time {
+      display: block;
+      margin-bottom: 1px;
+      color: var(--peach-deep);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .phase-title {
+      display: block;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: var(--display);
+      font-size: 13.5px;
+      font-weight: 900;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .phase-sub {
+      display: block;
+      overflow: hidden;
+      margin-top: 1px;
+      color: var(--ink-faint);
+      font-size: 9px;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .phase-count {
+      padding: 3px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.26);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--ink-faint);
+      font-family: var(--display);
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .phase-count.is-complete {
+      border-color: #69b394;
+      background: var(--mint);
+      color: #244c3d;
+    }
+
+    .phase-chevron {
+      font-size: 13px;
+      color: var(--ink-faint);
+      transition: transform 0.2s ease;
+    }
+
+    .phase-card.is-open .phase-chevron { transform: rotate(180deg); }
+
+    .phase-body {
+      display: none;
+      padding: 0 10px 13px 55px;
+      animation: fade-in 0.2s ease;
+    }
+
+    .phase-card.is-open .phase-body { display: block; }
+
+    .phase-checks {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .phase-check {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      align-items: start;
+      gap: 7px;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.64;
+      cursor: pointer;
+    }
+
+    .phase-check input,
+    .shopping-check {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      display: grid;
+      place-content: center;
+      flex: none;
+      margin: 2px 0 0;
+      border: 1.5px solid rgba(72, 54, 49, 0.52);
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .phase-check input::before,
+    .shopping-check::before {
+      content: "";
+      width: 7px;
+      height: 4px;
+      border-left: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      transform: rotate(-45deg) scale(0);
+      transform-origin: center;
+      transition: transform 0.15s ease;
+    }
+
+    .phase-check input:checked,
+    .shopping-check:checked {
+      border-color: var(--ink);
+      background: var(--mint);
+    }
+
+    .phase-check input:checked::before,
+    .shopping-check:checked::before { transform: rotate(-45deg) scale(1); }
+
+    .phase-check input:checked + span {
+      color: var(--ink-faint);
+      text-decoration: line-through;
+      text-decoration-color: rgba(72, 54, 49, 0.25);
+    }
+
+    .phase-pitfalls {
+      margin-top: 8px;
+      padding: 8px 10px 7px;
+      border-left: 3px solid var(--butter);
+      border-radius: 0 8px 8px 0;
+      background: #fff7e2;
+    }
+
+    .phase-pitfalls-title {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 3px;
+      color: #8a6721;
+      font-size: 8.5px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .phase-pitfalls-title .icon { font-size: 10px; }
+
+    .phase-pitfalls ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .phase-pitfalls li {
+      position: relative;
+      padding-left: 11px;
+      color: #765e37;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .phase-pitfalls li::before {
+      content: "!";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1.9;
+    }
+
+    .phase-simulate {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      padding: 4px 0;
+      border: 0;
+      background: transparent;
+      color: var(--peach-deep);
+      font-size: 9.5px;
+      font-weight: 900;
+      line-height: 1.3;
+    }
+
+    .phase-simulate:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .phase-simulate .icon { font-size: 11px; }
+
+    .sim-side {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .event-stage-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 100%;
+      margin-top: 4px;
+      padding: 3px 7px;
+      overflow: hidden;
+      border: 1px solid rgba(72, 54, 49, 0.24);
+      border-radius: 999px;
+      background: #f1eafb;
+      color: #6d588f;
+      font-size: 8.5px;
+      font-weight: 900;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .event-stage-chip .icon { font-size: 10px; }
+
+    .severity--awkward { background: #eadff8; color: #5e4788; }
+
+    .event-empty {
+      min-height: 422px;
+    }
+
+    .shopping-slot {
+      position: relative;
+      min-width: 0;
+    }
+
+    .shopping-card {
+      position: relative;
+      padding: 17px 15px 13px;
+      border: 2px solid var(--ink);
+      border-radius: 19px;
+      background: #fff1b8;
+      box-shadow: var(--shadow);
+      transform: rotate(-0.35deg);
+      transition: box-shadow 0.18s ease, transform 0.18s ease;
+    }
+
+    .shopping-card::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      width: 78px;
+      height: 20px;
+      background: rgba(255, 250, 241, 0.72);
+      border-left: 1px dashed rgba(72, 54, 49, 0.2);
+      border-right: 1px dashed rgba(72, 54, 49, 0.2);
+      transform: translateX(-50%) rotate(1.5deg);
+    }
+
+    .shopping-card.is-floating {
+      position: fixed;
+      z-index: 80;
+      max-height: calc(100vh - 16px);
+      margin: 0;
+      overflow-y: auto;
+      transform: none;
+      box-shadow: 10px 12px 0 rgba(72, 54, 49, 0.2);
+      overscroll-behavior: contain;
+    }
+
+    .shopping-card.is-dragging {
+      box-shadow: 12px 15px 0 rgba(72, 54, 49, 0.23);
+      transition: none;
+      cursor: grabbing;
+    }
+
+    .shopping-card.is-floating::before {
+      top: 0;
+      opacity: 0.8;
+    }
+
+    .shopping-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .shopping-card.is-dragging .shopping-head { cursor: grabbing; }
+
+    .shopping-title-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .shopping-grip {
+      display: grid;
+      place-items: center;
+      width: 17px;
+      min-height: 34px;
+      margin-top: 1px;
+      color: rgba(114, 93, 53, 0.62);
+      flex: none;
+    }
+
+    .shopping-grip .icon { font-size: 17px; }
+
+    .shopping-head-tools {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: none;
+    }
+
+    .shopping-mode-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.28);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.45);
+      color: #725d35;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .shopping-mode-btn .icon { font-size: 11px; }
+    .shopping-mode-btn:hover { border-color: rgba(72, 54, 49, 0.6); background: #fffdf8; transform: translateY(-1px); }
+
+    .shopping-slot-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 20px 14px;
+      border: 2px dashed rgba(72, 54, 49, 0.32);
+      border-radius: 19px;
+      background: rgba(255, 241, 184, 0.45);
+      color: #8a6721;
+      font-size: 10.5px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .shopping-slot-hint .icon { font-size: 18px; opacity: 0.7; }
+
+    .shopping-slot-hint button {
+      padding: 3px 9px;
+      border: 1px solid rgba(72, 54, 49, 0.4);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--ink);
+      font-size: 9.5px;
+      font-weight: 800;
+    }
+
+    .shopping-slot-hint button:hover { background: #fffdf8; border-color: var(--ink); }
+
+    .shopping-kicker {
+      display: block;
+      margin-bottom: 2px;
+      color: #8a6721;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+    }
+
+    .shopping-head h3 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .shopping-head h3 .icon { font-size: 17px; color: #9a6d18; }
+
+    .shopping-count {
+      flex: none;
+      padding: 3px 7px;
+      border: 1px solid rgba(72, 54, 49, 0.28);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.45);
+      color: #725d35;
+      font-family: var(--display);
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    .shopping-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+
+    .shopping-input {
+      width: 100%;
+      min-width: 0;
+      height: 35px;
+      padding: 0 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.6);
+      border-radius: 8px;
+      outline: 0;
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .shopping-input::placeholder { color: #9b855d; opacity: 1; font-weight: 500; }
+    .shopping-input:focus { border-color: var(--ink); background: #fffdf8; }
+
+    .shopping-add {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      background: var(--peach);
+      color: var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .shopping-add .icon { font-size: 16px; }
+    .shopping-add:hover { background: #ffad98; transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+    .shopping-add:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+
+    .shopping-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin-top: 7px;
+      color: #8a6721;
+      font-size: 8.5px;
+      line-height: 1.5;
+    }
+
+    .shopping-suggestion {
+      padding: 2px 6px;
+      border: 1px dashed rgba(72, 54, 49, 0.28);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.4);
+      color: #765e37;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .shopping-suggestion:hover { background: #fffdf8; border-style: solid; }
+
+    .shopping-list {
+      display: grid;
+      gap: 5px;
+      max-height: 228px;
+      overflow-y: auto;
+      margin: 10px 0 0;
+      padding: 0;
+      list-style: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(72, 54, 49, 0.3) transparent;
+    }
+
+    .shopping-item {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      min-height: 31px;
+      padding: 5px 6px;
+      border: 1px dashed rgba(72, 54, 49, 0.24);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.48);
+    }
+
+    .shopping-item.is-bought { opacity: 0.62; }
+
+    .shopping-text {
+      overflow-wrap: anywhere;
+      color: #5c4b2b;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .shopping-item.is-bought .shopping-text {
+      text-decoration: line-through;
+      text-decoration-color: rgba(72, 54, 49, 0.4);
+    }
+
+    .shopping-del {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      background: transparent;
+      color: #9b855d;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    .shopping-del:hover { border-color: rgba(72, 54, 49, 0.25); background: #fffdf8; color: var(--peach-deep); }
+
+    .shopping-empty {
+      margin: 10px 0 3px;
+      padding: 12px 10px;
+      border: 1px dashed rgba(72, 54, 49, 0.22);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.3);
+      color: #8a764c;
+      font-family: var(--hand);
+      font-size: 11.5px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .shopping-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px dashed rgba(72, 54, 49, 0.2);
+      color: #8a6721;
+      font-size: 8px;
+      line-height: 1.5;
+    }
+
+    .shopping-clear {
+      padding: 2px 0;
+      border: 0;
+      background: transparent;
+      color: #765e37;
+      font-size: 8.5px;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .shopping-clear:hover { color: var(--peach-deep); }
+    .shopping-clear:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: none; }
+
+    .shopping-drag-tip {
+      margin: 7px 0 0;
+      color: rgba(114, 93, 53, 0.78);
+      font-family: var(--hand);
+      font-size: 11.5px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1020px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr) 330px;
+        gap: 24px;
+      }
+
+      .hero-sticky { right: 0; width: 142px; font-size: 13px; }
+      .hero-pin { left: 0; }
+
+      .brand-cn { font-size: clamp(3.1rem, 7.3vw, 5.2rem); }
+    }
+
+    @media (max-width: 880px) {
+      .hero {
+        display: block;
+        min-height: 0;
+        padding: 34px 0 21px;
+      }
+
+      .hero-art {
+        display: none;
+      }
+
+      .hero-sub { max-width: 36em; }
+
+      .simulation-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .empty-route,
+      .event-empty {
+        min-height: 300px;
+      }
+
+      .notes-body {
+        grid-template-columns: 170px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 0 15px 22px; }
+
+      .eyebrow {
+        font-size: 8.5px;
+        letter-spacing: 0.13em;
+        padding: 6px 10px;
+      }
+
+      .brand {
+        gap: 2px 7px;
+        margin: 16px 0 12px;
+      }
+
+      .brand-cn {
+        font-size: clamp(2.55rem, 11.4vw, 4.25rem);
+        text-shadow: 2px 2px 0 var(--paper), 4px 4px 0 rgba(245, 182, 199, 0.65);
+      }
+
+      .brand-en {
+        font-size: clamp(1.55rem, 6.2vw, 2.2rem);
+        transform: rotate(-3deg) translateY(-2px);
+      }
+
+      .hero-sub {
+        font-size: 14.5px;
+        line-height: 1.8;
+      }
+
+      .hero-chips { margin-top: 15px; gap: 6px; }
+      .hero-chip { font-size: 10.5px; padding: 6px 8px; }
+      .hero-mission { margin-top: 11px; padding: 7px 9px; font-size: 10.5px; line-height: 1.6; }
+      .mission-tag { font-size: 8px; }
+
+      .section-head {
+        display: block;
+        margin: 31px 0 13px;
+      }
+
+      .section-title-row { gap: 9px; }
+      .section-number { width: 33px; height: 33px; font-size: 10.5px; }
+      .section-kicker { font-size: 8px; }
+      .section-head h2 { font-size: 23px; }
+
+      .section-note {
+        max-width: none;
+        margin: 7px 0 0 42px;
+        font-size: 11.5px;
+        text-align: left;
+        line-height: 1.6;
+      }
+
+      .planner-card {
+        padding: 18px 15px 16px;
+        border-radius: 22px;
+      }
+
+      .planner-head { margin-bottom: 14px; }
+      .planner-head h3 { font-size: 20px; }
+      .planner-stamp { font-size: 7px; padding: 4px 7px; }
+      .planner-stamp b { font-size: 8px; }
+
+      .destination-form {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .destination-field {
+        min-height: 56px;
+        padding-left: 13px;
+        border-radius: 14px;
+      }
+
+      .destination-field > .icon { font-size: 21px; }
+      .destination-field input { height: 52px; font-size: 16px; }
+      .destination-field input::placeholder { font-size: 12.5px; }
+
+      .random-dest {
+        height: 35px;
+        padding: 0 8px;
+        font-size: 10.5px;
+      }
+
+      .start-btn {
+        min-height: 53px;
+        border-radius: 14px;
+        font-size: 15px;
+      }
+
+      .quick-row { margin-top: 11px; }
+      .quick-label { width: 100%; font-size: 10px; margin-bottom: 1px; }
+      .dest-chip { font-size: 10.5px; padding: 5px 9px; }
+
+      .planner-hint { font-size: 12px; line-height: 1.5; margin-top: 12px; padding-top: 10px; }
+
+      .simulation-grid { gap: 14px; margin-top: 14px; }
+
+      .paper-panel { border-radius: 20px; }
+      .panel-head { padding: 15px 15px 12px; }
+      .panel-head h3 { font-size: 18px; }
+      .panel-eyebrow { font-size: 7.5px; }
+      .route-meta span { font-size: 7.5px; padding: 3px 6px; }
+      .reroll-btn { font-size: 9.5px; padding: 5px 7px; }
+
+      .empty-route { min-height: 270px; padding: 18px 20px 26px; }
+      .empty-route h4 { font-size: 15.5px; }
+      .empty-route p { font-size: 11.5px; }
+      .empty-route-art { max-width: 310px; }
+
+      .route-list { padding: 8px 11px 1px; }
+      .route-step { grid-template-columns: 33px minmax(0, 1fr); gap: 8px; padding-bottom: 9px; }
+      .route-dot { width: 29px; height: 29px; font-size: 13px; }
+      .route-rail { padding-top: 6px; }
+      .route-card { padding: 9px 10px 10px; border-radius: 11px; }
+      .route-day { font-size: 8px; }
+      .route-tag { font-size: 7.5px; padding: 1px 5px; }
+      .route-card h4 { font-size: 13px; }
+      .route-card p { font-size: 11px; line-height: 1.65; }
+      .route-footnote { padding: 7px 15px 14px; font-size: 11.5px; }
+
+      .event-progress { padding: 12px 14px 0; }
+      .event-list { padding: 10px 11px 14px; gap: 9px; }
+      .event-card { padding: 11px 11px 9px; border-radius: 14px; }
+      .event-card h4 { font-size: 13.5px; }
+      .event-card > p { font-size: 11.5px; }
+      .event-empty { min-height: 270px; padding: 20px 18px 26px; }
+      .event-empty h4 { font-size: 15.5px; }
+      .event-empty p { font-size: 11.5px; }
+      .mystery-stack { width: 154px; height: 100px; margin-bottom: 12px; }
+      .mystery-card { width: 94px; height: 72px; left: 30px; top: 13px; }
+      .mystery-card.m1 { transform: rotate(-13deg) translate(-12px, 3px); }
+      .mystery-card.m2 { transform: rotate(9deg) translate(15px, 0); }
+
+      .notes-section { margin-top: 31px; }
+      .notes-paper {
+        padding: 17px 13px 15px 34px;
+        border-radius: 20px;
+      }
+      .notes-paper::after { left: 12px; background-size: 12px 32px; }
+      .notes-head { flex-direction: column; gap: 8px; padding-bottom: 12px; }
+      .notebook-badge { width: 37px; height: 37px; font-size: 18px; border-radius: 10px; }
+      .notes-head h3 { font-size: 19px; }
+      .save-status { margin-top: 0; font-size: 9.5px; }
+
+      .notes-body {
+        grid-template-columns: 1fr;
+        gap: 13px;
+        padding-top: 13px;
+      }
+      .note-side {
+        padding: 0 0 12px;
+        border-right: 0;
+        border-bottom: 1.5px dashed var(--line);
+      }
+      .note-side-label { margin-bottom: 7px; }
+      .note-tags { gap: 5px; }
+      .note-tag { padding: 4px 8px; font-size: 10px; }
+      .note-tip { display: none; }
+      .note-quote { display: none; }
+      .note-sheet { min-height: 276px; border-radius: 11px; }
+      #notes {
+        min-height: 225px;
+        padding: 12px 13px 12px 31px;
+        font-size: 16px;
+        line-height: 31px;
+        background-position: 0 12px;
+      }
+      .note-sheet::before { left: 22px; }
+      .note-sheet-foot { padding: 7px 8px 7px 14px; }
+      .quiet-btn { font-size: 9.5px; padding: 4px 6px; }
+
+      .site-foot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 21px 2px 4px;
+        font-size: 9.5px;
+      }
+
+      .toast { bottom: 16px; max-width: calc(100vw - 30px); white-space: nowrap; }
+    }
+
+    @media (max-width: 390px) {
+      .brand-cn { font-size: 2.48rem; }
+      .brand-en { font-size: 1.55rem; }
+      .hero-sub { font-size: 13.5px; }
+      .planner-stamp { display: none; }
+    }
+
+    @media (max-width: 1020px) {
+      .journey-summary { grid-template-columns: minmax(0, 1fr); }
+      .journey-stats { justify-content: flex-start; padding: 0; }
+    }
+
+    @media (max-width: 960px) {
+      .simulation-grid { grid-template-columns: 1fr; }
+      .sim-side {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.85fr);
+        align-items: start;
+        gap: 14px;
+      }
+      .event-empty { min-height: 330px; }
+      .empty-journey { min-height: 440px; }
+    }
+
+    @media (max-width: 720px) {
+      .travel-type-row { gap: 6px; margin-top: 8px; padding-top: 8px; }
+      .segmented button { min-height: 22px; padding: 3px 8px; font-size: 9.5px; }
+      .type-hint { width: 100%; margin-top: 1px; font-size: 10.5px; }
+
+      .journey-summary {
+        gap: 10px 14px;
+        margin-top: 14px;
+        padding: 14px 14px 13px;
+        border-radius: 18px;
+      }
+      .journey-kicker { font-size: 7.5px; }
+      .journey-summary h3 { font-size: 20px; }
+      .journey-summary-main p { font-size: 10.5px; line-height: 1.6; }
+      .journey-local { font-size: 9.8px !important; padding: 5px 7px; }
+      .journey-stats { gap: 20px; }
+      .journey-stat strong { font-size: 22px; }
+      .journey-stat span { font-size: 7.5px; }
+      .journey-readiness {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding-top: 8px;
+      }
+      .readiness-label { font-size: 9px; }
+      .readiness-label b { font-size: 14px; }
+      .readiness-note { justify-self: start; font-size: 8.5px; }
+      .journey-head-meta { display: none; }
+
+      .empty-journey { min-height: 395px; padding: 17px 15px 23px; }
+      .ghost-journey { padding: 6px 9px; margin-bottom: 12px; }
+      .ghost-stage { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 7px; padding: 3px 0; }
+      .ghost-stage::before { left: 11.5px; top: 26px; }
+      .ghost-num { width: 24px; height: 24px; font-size: 7px; }
+      .ghost-stage b { font-size: 9px; }
+      .ghost-stage em { font-size: 7px; }
+      .empty-journey h4 { font-size: 15.5px; }
+      .empty-journey > p { font-size: 11px; }
+
+      .phase-list { padding: 4px 6px 0; }
+      .phase-toggle {
+        grid-template-columns: 32px minmax(0, 1fr) auto 12px;
+        gap: 7px;
+        padding: 9px 6px;
+      }
+      .phase-dot { width: 30px; height: 30px; font-size: 8px; }
+      .phase-time { font-size: 7.5px; }
+      .phase-title { font-size: 12.5px; line-height: 1.35; white-space: normal; }
+      .phase-sub { font-size: 8.5px; }
+      .phase-count { padding: 2px 5px; font-size: 8px; }
+      .phase-chevron { font-size: 11px; }
+      .phase-body { padding: 0 7px 11px 42px; }
+      .phase-check { grid-template-columns: 15px minmax(0, 1fr); gap: 6px; font-size: 10.5px; }
+      .phase-check input, .shopping-check { width: 14px; height: 14px; }
+      .phase-pitfalls { padding: 7px 8px 6px; }
+      .phase-pitfalls-title { font-size: 8px; }
+      .phase-pitfalls li { font-size: 9.5px; }
+      .phase-simulate { font-size: 8.8px; }
+
+      .sim-side { grid-template-columns: 1fr; gap: 14px; }
+      .event-empty { min-height: 270px; }
+      .shopping-card { transform: none; padding: 16px 13px 12px; border-radius: 17px; }
+      .shopping-head h3 { font-size: 17px; }
+      .shopping-input { height: 34px; font-size: 10.5px; }
+      .shopping-add { width: 34px; height: 34px; }
+      .shopping-list { max-height: 190px; }
+      .shopping-text { font-size: 10px; }
+    }
+
+    /* ---------- Readability pass: larger type, same playful proportions ---------- */
+    body { font-size: 16px; }
+    .eyebrow { font-size: 10.5px; }
+    .hero-sub { font-size: 18px; line-height: 1.85; }
+    .hero-chip { font-size: 12.5px; }
+    .hero-mission { font-size: 12.5px; }
+    .mission-tag { font-size: 9.5px; }
+    .section-kicker { font-size: 10px; }
+    .section-head h2 { font-size: clamp(25px, 3vw, 34px); }
+    .section-note { font-size: 13.5px; }
+    .planner-head h3 { font-size: 25px; }
+    .mini-eyebrow { font-size: 9.5px; }
+    .planner-stamp { font-size: 9px; }
+    .planner-stamp b { font-size: 10px; }
+    .destination-field input { font-size: 19px; }
+    .destination-field input::placeholder { font-size: 15.5px; }
+    .random-dest { font-size: 12.5px; }
+    .start-btn { font-size: 18px; }
+    .quick-label { font-size: 12px; }
+    .dest-chip { font-size: 12.5px; }
+    .type-label { font-size: 11.5px; }
+    .segmented button { font-size: 11.5px; }
+    .type-hint { font-size: 12.5px; }
+    .planner-hint { font-size: 13.5px; }
+    .journey-kicker { font-size: 9.5px; }
+    .journey-summary-main p { font-size: 13px; }
+    .journey-local { font-size: 12px !important; }
+    .journey-local b { font-size: 10px; }
+    .journey-stat span { font-size: 9.5px; }
+    .readiness-label { font-size: 11px; }
+    .readiness-note { font-size: 10.5px; }
+    .panel-eyebrow { font-size: 9.5px; }
+    .panel-head h3 { font-size: 22px; }
+    .journey-head-meta span { font-size: 9.5px; }
+    .reroll-btn { font-size: 11.5px; }
+    .phase-time { font-size: 9.5px; }
+    .phase-title { font-size: 15px; }
+    .phase-sub { font-size: 10.5px; }
+    .phase-count { font-size: 10px; }
+    .phase-check { font-size: 13px; line-height: 1.7; }
+    .phase-pitfalls-title { font-size: 9.5px; }
+    .phase-pitfalls li { font-size: 11.5px; line-height: 1.7; }
+    .phase-simulate { font-size: 11px; }
+    .ghost-stage b { font-size: 11px; }
+    .ghost-stage em { font-size: 9px; }
+    .ghost-num { font-size: 8.5px; }
+    .empty-journey h4 { font-size: 18px; }
+    .empty-journey > p { font-size: 13px; }
+    .route-footnote { font-size: 13px; }
+    .event-stage-chip { font-size: 9.5px; }
+    .event-cat { font-size: 10.5px; }
+    .severity { font-size: 9.5px; }
+    .event-card h4 { font-size: 16px; }
+    .event-card > p { font-size: 13.5px; line-height: 1.75; }
+    .event-advice summary { font-size: 12px; }
+    .advice-body li { font-size: 12.5px; line-height: 1.75; }
+    .note-btn, .solve-btn { font-size: 11px; }
+    .event-empty h4 { font-size: 18px; }
+    .event-empty p { font-size: 13px; }
+    .event-empty .tiny-print { font-size: 11.5px; }
+    .progress-copy { font-size: 11.5px; }
+    .progress-copy strong { font-size: 14px; }
+    .progress-hint { font-size: 12.5px; }
+    .shopping-kicker { font-size: 9px; }
+    .shopping-head h3 { font-size: 20px; }
+    .shopping-count { font-size: 10.5px; }
+    .shopping-mode-btn { font-size: 11px; }
+    .shopping-input { font-size: 12.5px; }
+    .shopping-suggestions { font-size: 10px; }
+    .shopping-suggestion { font-size: 9.5px; }
+    .shopping-text { font-size: 12px; }
+    .shopping-empty { font-size: 12.5px; }
+    .shopping-foot { font-size: 9.5px; }
+    .shopping-clear { font-size: 10px; }
+    .shopping-slot-hint { font-size: 12px; }
+    .shopping-slot-hint button { font-size: 10.5px; }
+    .notes-kicker { font-size: 9.5px; }
+    .notes-head h3 { font-size: 24px; }
+    .save-status { font-size: 12px; }
+    .note-side-label { font-size: 11.5px; }
+    .note-tag { font-size: 12px; }
+    .note-tip { font-size: 10.5px; }
+    .note-quote { font-size: 15px; }
+    #notes { font-size: 18.5px; }
+    .char-count { font-size: 12px; }
+    .quiet-btn { font-size: 12px; }
+    .site-foot { font-size: 11.5px; }
+
+    @media (max-width: 720px) {
+      .eyebrow { font-size: 9.5px; }
+      .hero-sub { font-size: 15.5px; }
+      .hero-chip { font-size: 11.5px; }
+      .hero-mission { font-size: 11.5px; }
+      .section-kicker { font-size: 8.5px; }
+      .section-head h2 { font-size: 25px; }
+      .section-note { font-size: 12px; }
+      .planner-head h3 { font-size: 22px; }
+      .destination-field input { font-size: 17px; }
+      .destination-field input::placeholder { font-size: 13.5px; }
+      .start-btn { font-size: 16.5px; }
+      .dest-chip { font-size: 11.5px; }
+      .type-hint { font-size: 11px; }
+      .planner-hint { font-size: 12px; }
+      .journey-summary-main p { font-size: 12px; }
+      .journey-local { font-size: 11px !important; }
+      .journey-stat span { font-size: 8.5px; }
+      .readiness-label { font-size: 10.5px; }
+      .readiness-note { font-size: 9.5px; }
+      .panel-eyebrow { font-size: 8.5px; }
+      .panel-head h3 { font-size: 20px; }
+      .reroll-btn { font-size: 10.5px; }
+      .phase-time { font-size: 8.5px; }
+      .phase-title { font-size: 14px; }
+      .phase-sub { font-size: 9.5px; }
+      .phase-count { font-size: 9px; }
+      .phase-check { font-size: 12.5px; }
+      .phase-pitfalls-title { font-size: 8.5px; }
+      .phase-pitfalls li { font-size: 11px; }
+      .phase-simulate { font-size: 10px; }
+      .ghost-stage b { font-size: 10px; }
+      .ghost-stage em { font-size: 8px; }
+      .empty-journey h4 { font-size: 16.5px; }
+      .empty-journey > p { font-size: 12px; }
+      .route-footnote { font-size: 12px; }
+      .event-card h4 { font-size: 15px; }
+      .event-card > p { font-size: 12.5px; }
+      .advice-body li { font-size: 12px; }
+      .note-btn, .solve-btn { font-size: 10.5px; }
+      .event-empty h4 { font-size: 16.5px; }
+      .event-empty p { font-size: 12px; }
+      .progress-copy { font-size: 11px; }
+      .progress-hint { font-size: 11.5px; }
+      .shopping-head h3 { font-size: 19px; }
+      .shopping-input { font-size: 12px; }
+      .shopping-text { font-size: 11.5px; }
+      .shopping-suggestions { font-size: 9.5px; }
+      .shopping-suggestion { font-size: 9px; }
+      .shopping-empty { font-size: 11.5px; }
+      .notes-head h3 { font-size: 21px; }
+      .save-status { font-size: 10.5px; }
+      .note-tag { font-size: 11px; }
+      #notes { font-size: 17.5px; }
+      .char-count { font-size: 11px; }
+      .quiet-btn { font-size: 11px; }
+      .site-foot { font-size: 10.5px; }
+      .shopping-card.is-floating { width: min(360px, calc(100vw - 16px)); }
+      .shopping-head { gap: 6px; }
+      .shopping-head-tools { gap: 3px; }
+      .shopping-mode-btn { min-height: 23px; padding: 2px 5px; }
+      .shopping-grip { min-height: 32px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-plane" viewBox="0 0 24 24">
+      <path d="M21.5 3.2 3.2 10.4l6.3 2.3 2.2 6.3 9.8-15.8Z"/>
+      <path d="m9.5 12.7 12-9.5"/>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24">
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
+      <circle cx="12" cy="10" r="2.5"/>
+    </symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24">
+      <circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="16" cy="6" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="8" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="16" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="8" cy="18" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="16" cy="18" r="1.6" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-suitcase" viewBox="0 0 24 24">
+      <rect x="4" y="7" width="16" height="13" rx="2.5"/>
+      <path d="M9 7V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V7M9 20v1.5M15 20v1.5M8 11v5M16 11v5"/>
+    </symbol>
+    <symbol id="i-route" viewBox="0 0 24 24">
+      <circle cx="5" cy="18" r="2.2"/>
+      <circle cx="19" cy="6" r="2.2"/>
+      <path d="M7.1 17.2c3.5-.5 1.4-5 5.1-5.3 2.5-.2 2.4-3.1 4.6-4.1"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="M12 2.8c.6 5 2.2 6.6 7.2 7.2-5 .6-6.6 2.2-7.2 7.2-.6-5-2.2-6.6-7.2-7.2 5-.6 6.6-2.2 7.2-7.2Z"/>
+      <path d="M19 16.5c.2 2 1 2.8 3 3-2 .2-2.8 1-3 3-.2-2-1-2.8-3-3 2-.2 2.8-1 3-3Z"/>
+    </symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24">
+      <path d="M7 18a4.5 4.5 0 0 1-.7-8.9A6 6 0 0 1 18 10.5 3.8 3.8 0 0 1 17.5 18H7Z"/>
+      <path d="M8 21h.01M12 21h.01M16 21h.01"/>
+    </symbol>
+    <symbol id="i-train" viewBox="0 0 24 24">
+      <rect x="5" y="3.5" width="14" height="14" rx="4"/>
+      <path d="M5 11h14M9 21l1.7-3.5M15 21l-1.7-3.5M9 14.5h.01M15 14.5h.01"/>
+    </symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24">
+      <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H19v3"/>
+      <rect x="3" y="7.5" width="18" height="12" rx="2.5"/>
+      <path d="M16 13.5h3M3 10h18"/>
+    </symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24">
+      <path d="M20.5 11.2a7.7 7.7 0 0 1-11 7l-4.5 1.3 1.5-4.1a7.7 7.7 0 1 1 14-4.2Z"/>
+      <path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>
+    </symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24">
+      <path d="M3 19V7M21 19V10a3 3 0 0 0-3-3h-7v7"/>
+      <path d="M3 14h18M3 19h18M7 10.5h.01"/>
+    </symbol>
+    <symbol id="i-food" viewBox="0 0 24 24">
+      <path d="M4 10h16a8 8 0 0 1-16 0ZM12 19v2M8 22h8"/>
+      <path d="M8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <rect x="7" y="2.5" width="10" height="19" rx="2.5"/>
+      <path d="M10.5 5h3M11 18.5h2M4 8H2M4 12H2M4 16H2"/>
+    </symbol>
+    <symbol id="i-door" viewBox="0 0 24 24">
+      <path d="M5 21h14M7 21V4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21"/>
+      <path d="M14 12h.01"/>
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5"/>
+      <path d="M14.8 8.7c-.7-.6-1.6-.9-2.8-.9-1.7 0-2.8.8-2.8 2 0 3 5.6 1.3 5.6 4.3 0 1.2-1.1 2.1-2.9 2.1-1.2 0-2.2-.4-2.9-1M12 6v1.8M12 17.2V19"/>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M4 8h3l1.5-2h7L17 8h3a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 20H4a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 4 8Z"/>
+      <circle cx="12" cy="13.5" r="3.5"/>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2"/>
+      <path d="M3 20c.4-4 2.6-6 6-6s5.6 2 6 6"/>
+      <path d="M16 5.5a3 3 0 0 1 0 5.8M17 14c2.4.6 3.8 2.6 4 6"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M12 3 2.8 19.5a1 1 0 0 0 .9 1.5h16.6a1 1 0 0 0 .9-1.5L12 3Z"/>
+      <path d="M12 9v5M12 17.5h.01"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 2.8 20 5v6.5c0 4.8-3.2 8-8 9.7-4.8-1.7-8-4.9-8-9.7V5l8-2.2Z"/>
+      <path d="m8.5 11.8 2.3 2.4 4.8-5"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3.2 2"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4.2"/>
+      <path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/>
+    </symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24">
+      <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5v1a2.5 2.5 0 0 0 0 5v1a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 15.5v-1a2.5 2.5 0 0 0 0-5v-1Z"/>
+      <path d="M14 9v6M9 9v1M9 13v1"/>
+    </symbol>
+    <symbol id="i-notebook" viewBox="0 0 24 24">
+      <rect x="5" y="3" width="15" height="18" rx="2"/>
+      <path d="M5 7H3M5 12H3M5 17H3M9 7h7M9 11h7M9 15h4"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M20 7v5h-5M4 17v-5h5"/>
+      <path d="M6.1 9A7 7 0 0 1 19 8l1 4M4 12l1 4a7 7 0 0 0 12.9-1"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M4 7h16M9 7V4h6v3M6.5 7l.8 14h9.4l.8-14M10 11v6M14 11v6"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="m4.5 12.5 5 5L20 6.5"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 4v16M4 12h16"/>
+    </symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4"/>
+      <path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M4 12h16M14 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24">
+      <path d="m6 9 6 6 6-6"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M20.8 5.8a5.2 5.2 0 0 0-7.4 0L12 7.2l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4L12 22l8.8-8.8a5.2 5.2 0 0 0 0-7.4Z"/>
+    </symbol>
+    <symbol id="i-map" viewBox="0 0 24 24">
+      <path d="m3 6 6-2.5L15 6l6-2.5v15L15 21l-6-2.5L3 21V6Z"/>
+      <path d="M9 3.5v15M15 6v15"/>
+    </symbol>
+    <symbol id="i-passport" viewBox="0 0 24 24">
+      <rect x="5" y="2.5" width="14" height="19" rx="2.5"/>
+      <circle cx="12" cy="10" r="3.2"/>
+      <path d="M8.8 10h6.4M12 6.8c1 1 1.4 2 1.4 3.2S13 12.2 12 13.2c-1-1-1.4-2-1.4-3.2s.4-2.2 1.4-3.2ZM8 17h8"/>
+    </symbol>
+    <symbol id="i-bank" viewBox="0 0 24 24">
+      <path d="M3 9 12 3l9 6H3Z"/>
+      <path d="M5 10v7M9.5 10v7M14.5 10v7M19 10v7M3 21h18M4 17.5h16"/>
+    </symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24">
+      <path d="M3 8h10.5a2.5 2.5 0 1 0-2.4-3.2M3 12h15a2 2 0 1 1-2 2M3 16h7.5a2.5 2.5 0 1 1-2.4 3.2"/>
+    </symbol>
+  </svg>
+
+  <div class="page">
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-index">01</span><span class="eyebrow-dot"></span> Travel Simulator · 纸上旅行事务所</div>
+        <h1 class="brand" aria-label="旅游模拟器desuwa">
+          <span class="brand-cn" aria-hidden="true">旅游模拟器</span>
+          <span class="brand-en" aria-hidden="true">desuwa</span>
+        </h1>
+        <p class="hero-sub">从几个月前抢票，到落地后的第一杯水，把整趟旅程以<strong>第一视角</strong>预演一遍。流程、冷门状况、容易忘的小物，一次补齐。</p>
+        <div class="hero-chips" aria-label="网站功能">
+          <span class="hero-chip"><svg class="icon"><use href="#i-route"/></svg>8 阶段全流程</span>
+          <span class="hero-chip"><svg class="icon"><use href="#i-alert"/></svg>40+ 冷门状况</span>
+          <span class="hero-chip"><svg class="icon"><use href="#i-suitcase"/></svg>待买小卡 + 笔记</span>
+        </div>
+        <p class="hero-mission"><span class="mission-tag">模拟目标</span>极致细致地走一遍第一视角旅程，把手续、物件和尴尬提前拦住。</p>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <span class="hero-pin"><svg class="icon"><use href="#i-heart"/></svg></span>
+        <span class="hero-spark one">✦</span>
+        <span class="hero-spark two">✦</span>
+        <div class="postcard">
+          <div class="postcard-top">
+            <div>
+              <span class="postcard-kicker">TRAVEL NOTE</span>
+              <div class="postcard-title">一张未出发的机票</div>
+            </div>
+            <div class="postcard-stamp">
+              <span class="stamp-sun">✷</span>
+              <b>ANY</b>
+              <small>TIME</small>
+            </div>
+          </div>
+          <div class="postcard-scene">
+            <svg viewBox="0 0 280 110" preserveAspectRatio="none" aria-hidden="true">
+              <circle cx="226" cy="28" r="15" fill="#FFD76C" stroke="#483631" stroke-width="1.5"/>
+              <path d="M197 44c3-7 12-8 15-2 6-1 10 4 7 8h-23c-4 0-4-5 1-6Z" fill="#FFF9EF" stroke="#483631" stroke-width="1.3"/>
+              <path d="M0 82c24-19 49-18 73-6 17 8 38 6 55-5 25-16 52-15 78 4 19 14 44 10 74-5v40H0V82Z" fill="#A9DDC7" stroke="#483631" stroke-width="1.5"/>
+              <path d="M0 95c26-12 49-14 73-4 20 8 39 7 60-3 26-13 58-8 85 4 19 8 39 7 62-2v20H0V95Z" fill="#FFD76C" stroke="#483631" stroke-width="1.5"/>
+              <path d="M35 84c30-34 74-38 106-21 23 12 42 7 65-8 21-14 39-20 61-11" fill="none" stroke="#483631" stroke-width="1.4" stroke-dasharray="4 5" stroke-linecap="round" opacity=".75"/>
+              <g transform="translate(205 34) rotate(12)">
+                <path d="M17 1 1.5 7.4l5.4 2 1.9 5.4L17 1Z" fill="#FFF9EF" stroke="#483631" stroke-width="1.3" stroke-linejoin="round"/>
+                <path d="M7 9.4 17 1" fill="none" stroke="#483631" stroke-width="1.1"/>
+              </g>
+              <circle cx="35" cy="84" r="4.3" fill="#FF9D85" stroke="#483631" stroke-width="1.3"/>
+              <path d="M48 67l3-7 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#FFF9EF" stroke="#483631" stroke-width="1.1" transform="translate(40 -10) scale(.55)"/>
+              <path d="M112 20c0 3-4 6-4 6s-4-3-4-6a4 4 0 1 1 8 0Z" fill="#F5B6C7" stroke="#483631" stroke-width="1.1"/>
+            </svg>
+          </div>
+          <div class="postcard-bottom">
+            <div>
+              <small>DESTINATION</small>
+              <strong>ANYWHERE</strong>
+            </div>
+            <div class="barcode"></div>
+          </div>
+        </div>
+        <div class="hero-sticky">
+          <span>把尴尬提前走一遍，</span>
+          <span>把东西都带齐全。</span>
+          <span class="heart">♡</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="section-number section-number--planner" aria-hidden="true">02</span>
+          <div>
+            <span class="section-kicker">Plan the whole journey</span>
+            <h2>把整趟旅程，从几个月前预演一遍</h2>
+          </div>
+        </div>
+        <p class="section-note">不赶景点，先排雷。<span class="scribble">每一件小事都算数。</span></p>
+      </div>
+
+      <section class="planner-card" aria-labelledby="planner-title">
+        <div class="planner-head">
+          <div>
+            <span class="mini-eyebrow">BOARDING PASS · NO. 0826</span>
+            <h3 id="planner-title">目的地登机牌</h3>
+          </div>
+          <span class="planner-stamp">8 STAGES<br><b>50+ CHECKS</b></span>
+        </div>
+
+        <form id="destinationForm" class="destination-form" novalidate>
+          <div class="destination-field">
+            <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+            <label class="sr-only" for="destination">输入旅游目的地</label>
+            <input
+              id="destination"
+              name="destination"
+              type="text"
+              maxlength="30"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="输入目的地，例如：京都、冰岛、重庆……"
+            >
+            <button class="random-dest" id="randomDest" type="button" title="随机选一个目的地">
+              <svg class="icon" aria-hidden="true"><use href="#i-dice"/></svg>
+              <span>随机</span>
+            </button>
+          </div>
+          <button class="start-btn" id="startBtn" type="submit">
+            <span id="startLabel">开始模拟</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+        </form>
+
+        <div class="quick-row">
+          <span class="quick-label"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg>试试这些</span>
+          <button class="dest-chip" type="button" data-dest="京都">京都</button>
+          <button class="dest-chip" type="button" data-dest="巴黎">巴黎</button>
+          <button class="dest-chip" type="button" data-dest="大理">大理</button>
+          <button class="dest-chip" type="button" data-dest="冰岛">冰岛</button>
+          <button class="dest-chip" type="button" data-dest="重庆">重庆</button>
+        </div>
+
+        <div class="travel-type-row">
+          <span class="type-label">旅行类型</span>
+          <div class="segmented" id="travelTypeGroup" role="group" aria-label="选择境内或出境游">
+            <button type="button" data-type="domestic" class="is-active" aria-pressed="true">境内游</button>
+            <button type="button" data-type="abroad" aria-pressed="false">出境游</button>
+          </div>
+          <span class="type-hint" id="typeHint">选好目的地后会自动判断，也可以手动改。</span>
+        </div>
+
+        <div class="planner-hint">
+          <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+          <span id="plannerHintText">从抢票、证件、打包、换乘/转机，到当地礼仪和返程退改，每个阶段都可能出其不意。</span>
+        </div>
+      </section>
+
+      <div class="journey-summary" id="journeySummary" hidden>
+        <div class="journey-summary-main">
+          <span class="journey-kicker"><svg class="icon" aria-hidden="true"><use href="#i-route"/></svg>FIRST-PERSON WALKTHROUGH · 第一视角预演</span>
+          <h3 id="summaryTitle">从订票到回家</h3>
+          <p id="summarySub">8 个阶段、50+ 个检查点，专门挑那些平时想不到的小事。</p>
+          <p class="journey-local" id="journeyLocal" hidden></p>
+        </div>
+        <div class="journey-stats" aria-label="模拟规模">
+          <div class="journey-stat"><strong>8</strong><span>旅程阶段</span></div>
+          <div class="journey-stat"><strong id="summaryChecks">56</strong><span>检查点</span></div>
+          <div class="journey-stat"><strong id="summaryEvents">47</strong><span>冷门状况</span></div>
+        </div>
+        <div class="journey-readiness">
+          <span class="readiness-label">准备度 <b id="summaryPercent">0%</b></span>
+          <div class="readiness-track" role="progressbar" aria-label="行前检查完成度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="readinessTrack">
+            <span class="readiness-fill" id="summaryBar"></span>
+          </div>
+          <span class="readiness-note" id="summaryProgress">已勾选 0 / 42 项</span>
+        </div>
+      </div>
+
+      <div class="simulation-grid" id="simulationGrid">
+        <section class="paper-panel journey-panel" aria-labelledby="routeTitle">
+          <div class="panel-head">
+            <div>
+              <span class="panel-eyebrow">FULL JOURNEY · 8 STAGES</span>
+              <h3 id="routeTitle">整趟旅程，还没开始</h3>
+            </div>
+            <div class="journey-head-meta" id="journeyMeta" hidden></div>
+          </div>
+
+          <div class="empty-journey" id="emptyJourney">
+            <div class="ghost-journey" aria-hidden="true">
+              <div class="ghost-stage"><span class="ghost-num">01</span><b>证件、机票与保险</b><em>T-6 月</em></div>
+              <div class="ghost-stage"><span class="ghost-num">02</span><b>住宿、预约与路线</b><em>T-3 月</em></div>
+              <div class="ghost-stage"><span class="ghost-num">03</span><b>打包与行前确认</b><em>T-7 天</em></div>
+              <div class="ghost-stage"><span class="ghost-num">04</span><b>去机场 / 车站</b><em>T-0</em></div>
+              <div class="ghost-stage"><span class="ghost-num">05</span><b>飞机 / 火车在途</b><em>ON THE WAY</em></div>
+              <div class="ghost-stage"><span class="ghost-num">06</span><b>落地、入境与安顿</b><em>D1</em></div>
+              <div class="ghost-stage"><span class="ghost-num">07</span><b>当地生活与游玩</b><em>D2-D4</em></div>
+              <div class="ghost-stage"><span class="ghost-num">08</span><b>退房、返程与回家</b><em>RETURN</em></div>
+            </div>
+            <h4>从“想出发”到“回到家”</h4>
+            <p>输入目的地后，8 个阶段会逐一展开。<br>先过流程，再挑刺，把真实旅程里可能的尴尬提前排掉。</p>
+          </div>
+
+          <div class="phase-list" id="phaseList" hidden></div>
+          <div class="route-footnote" id="routeFootnote">
+            <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+            <span>真正的从容，不是记住所有事，而是提前把最容易忘的那几件写下来。</span>
+          </div>
+        </section>
+
+        <aside class="sim-side">
+          <section class="paper-panel event-panel" aria-labelledby="eventTitle">
+            <div class="panel-head">
+              <div>
+                <span class="panel-eyebrow">SUDDENLY...</span>
+                <h3 id="eventTitle">这一站，说不定会翻车</h3>
+                <span class="event-stage-chip" id="eventStageChip">
+                  <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+                  先选一个阶段
+                </span>
+              </div>
+              <button class="reroll-btn" id="rerollBtn" type="button" disabled>
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                换一批
+              </button>
+            </div>
+
+            <div class="event-progress" id="eventProgress" hidden>
+              <div class="progress-copy">
+                <span>本阶段冷门状况预演</span>
+                <strong id="progressCount">0 / 3</strong>
+              </div>
+              <div class="progress-track" role="progressbar" aria-label="已预演的突发状况" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" id="progressTrack">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+              <p class="progress-hint" id="progressHint">点开应对卡，再按下「我准备好了」。</p>
+            </div>
+
+            <div class="event-list" id="eventList">
+              <div class="event-empty">
+                <div class="mystery-stack" aria-hidden="true">
+                  <div class="mystery-card m1">?</div>
+                  <div class="mystery-card m2">?</div>
+                  <div class="mystery-card m3"><svg class="icon"><use href="#i-alert"/></svg></div>
+                </div>
+                <h4>先选一个阶段</h4>
+                <p>输入目的地后，点开左侧任意阶段，<br>会随机掉落 3 个很少被想到的状况。</p>
+                <span class="tiny-print"><svg class="icon" aria-hidden="true"><use href="#i-suitcase"/></svg>不是吓你，是让你提前想好怎么办</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="shopping-slot" id="shoppingSlot">
+            <section class="shopping-card" id="shoppingCard" aria-labelledby="shoppingTitle">
+              <div class="shopping-head" id="shoppingHandle" title="按住标题拖动小卡">
+                <div class="shopping-title-wrap">
+                  <span class="shopping-grip" aria-hidden="true">
+                    <svg class="icon"><use href="#i-grip"/></svg>
+                  </span>
+                  <div>
+                    <span class="shopping-kicker">DON'T FORGET TO BUY</span>
+                    <h3 id="shoppingTitle"><svg class="icon" aria-hidden="true"><use href="#i-suitcase"/></svg>待买小卡</h3>
+                  </div>
+                </div>
+                <div class="shopping-head-tools">
+                  <span class="shopping-count" id="shoppingCount">0 / 0</span>
+                  <button class="shopping-mode-btn" id="shoppingModeBtn" type="button" aria-label="让小卡浮动，随时记录" title="让小卡浮动">
+                    <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+                    <span id="shoppingModeLabel">浮动</span>
+                  </button>
+                </div>
+              </div>
+
+              <form class="shopping-form" id="shoppingForm">
+                <label class="sr-only" for="shoppingInput">要买的物品</label>
+                <input class="shopping-input" id="shoppingInput" type="text" maxlength="40" autocomplete="off" placeholder="要买什么？比如 转换插头">
+                <button class="shopping-add" type="submit" title="加入待买清单" aria-label="加入待买清单">
+                  <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+                </button>
+              </form>
+
+              <div class="shopping-suggestions">
+                <span>常忘：</span>
+                <button class="shopping-suggestion" type="button" data-buy="转换插头">转换插头</button>
+                <button class="shopping-suggestion" type="button" data-buy="驱蚊液">驱蚊液</button>
+                <button class="shopping-suggestion" type="button" data-buy="水泡贴">水泡贴</button>
+              </div>
+
+              <ul class="shopping-list" id="shoppingList" aria-live="polite"></ul>
+              <div class="shopping-empty" id="shoppingEmpty">还没有要买的东西。<br>把突然想到的丢进来，出门前再扫一眼。</div>
+
+              <div class="shopping-foot">
+                <span id="shoppingSummary">已买 0 / 0</span>
+                <button class="shopping-clear" id="clearBoughtBtn" type="button">清掉已买</button>
+              </div>
+              <p class="shopping-drag-tip">按住标题拖动 · 点「浮动」随时记录</p>
+            </section>
+
+            <div class="shopping-slot-hint" id="shoppingSlotHint" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+              <span>待买小卡正在页面上浮动</span>
+              <button id="shoppingDockLink" type="button">召回</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <section class="notes-section" aria-labelledby="notesTitle">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="section-number section-number--notes" aria-hidden="true">03</span>
+          <div>
+            <span class="section-kicker">Write it before you forget</span>
+            <h2>把怕忘的，写在小纸条上</h2>
+          </div>
+        </div>
+        <p class="section-note"><span class="scribble">好记性不如烂笔头。</span> 笔记和待买清单都会自动保存在这台设备里。</p>
+      </div>
+
+      <div class="notes-paper">
+        <div class="notes-head">
+          <div class="notes-title-wrap">
+            <span class="notebook-badge" aria-hidden="true"><svg class="icon"><use href="#i-notebook"/></svg></span>
+            <div>
+              <span class="notes-kicker">MY TRAVEL NOTES · NO. 03</span>
+              <h3 id="notesTitle">旅途笔记</h3>
+            </div>
+          </div>
+          <div class="save-status" id="saveStatus" data-state="saved" aria-live="polite">
+            <span class="save-dot" aria-hidden="true"></span>
+            <span id="saveText">所有内容会自动保存在本机</span>
+          </div>
+        </div>
+
+        <div class="notes-body">
+          <aside class="note-side">
+            <p class="note-side-label"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>快速贴上标签</p>
+            <div class="note-tags" id="noteTags">
+              <button class="note-tag" type="button" data-tag="证件" data-content="护照/签证/身份证、复印件与云端备份分开收好；护照至少留 2 页空白。">证件</button>
+              <button class="note-tag" type="button" data-tag="支付" data-content="两张不同卡组织、境外交易已开通，另带少量小面额现金/硬币；刷卡选当地货币。">支付</button>
+              <button class="note-tag" type="button" data-tag="通讯" data-content="eSIM 提前装好并测试 APN，存离线地图/翻译包、使领馆电话和酒店当地文字地址。">通讯</button>
+              <button class="note-tag" type="button" data-tag="健康" data-content="常用药保留原包装和处方；水泡贴、补液盐、驱蚊、防晒唇膏、备用眼镜都带上。">健康</button>
+              <button class="note-tag" type="button" data-tag="礼仪" data-content="查清脱鞋场所、着装要求、小费习惯、拍照禁忌和厕所纸巾情况。">礼仪</button>
+              <button class="note-tag" type="button" data-tag="天气" data-content="看体感温度、风寒/降雨/潮汐/蚊虫预警；按天气准备保暖层、雨具和防蚊。">天气</button>
+              <button class="note-tag" type="button" data-tag="退税" data-content="确认同店最低金额、护照原件、退税单和托运前盖章流程，商品先别拆封。">退税</button>
+            </div>
+            <p class="note-tip">点击标签，会把小提示插入到笔记里。</p>
+            <p class="note-quote">计划是地图，<br>意外才是风景。</p>
+          </aside>
+
+          <div class="note-sheet" id="noteSheet">
+            <label class="sr-only" for="notes">旅途笔记</label>
+            <textarea
+              id="notes"
+              placeholder="第一视角预演：&#10;· 如果到酒店发现押金只收信用卡，我准备……&#10;· 进寺庙要脱鞋，我的袜子/鞋垫……&#10;· 出发前最后检查的三样东西是……"
+            ></textarea>
+            <div class="note-sheet-foot">
+              <span class="char-count" id="charCount">0 字</span>
+              <div class="note-actions">
+                <button class="quiet-btn" id="exportBtn" type="button">
+                  <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+                  导出
+                </button>
+                <button class="quiet-btn" id="clearBtn" type="button">
+                  <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>
+                  <span id="clearLabel">清空</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-foot">
+      <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬</p>
+      <p>Made with <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg> for careful travelers · 所有内容只留在你的浏览器里</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+      const NOTES_KEY = 'travel-simulator-desuwa-notes-v1';
+      const DESTINATIONS = ['京都', '巴黎', '大理', '冰岛', '重庆', '东京', '成都', '上海', '西安', '杭州', '厦门', '长沙', '青岛', '香港', '新加坡', '曼谷', '伦敦', '首尔'];
+
+      const PACKS = [
+        { keys: ['京都', 'kyoto'], label: '古都散步', spots: ['清水寺与二年坂', '锦市场与鸭川', '岚山竹林与渡月桥', '宇治平等院'], food: '抹茶和汤豆腐' },
+        { keys: ['东京', 'tokyo', '日本'], label: '城市漫游', spots: ['浅草寺与雷门', '谷中银座与上野', '代代木公园与涩谷', '镰仓海边'], food: '拉面和喫茶店布丁' },
+        { keys: ['大阪', 'osaka'], label: '关西散步', spots: ['大阪城公园', '黑门市场与道顿堀', '中崎町旧街区', '奈良公园'], food: '章鱼烧和串炸' },
+        { keys: ['巴黎', 'paris'], label: '塞纳河慢游', spots: ['埃菲尔铁塔与塞纳河', '玛黑区与孚日广场', '蒙马特高地', '凡尔赛宫'], food: '可颂和热巧克力' },
+        { keys: ['冰岛', 'iceland'], label: '公路与风', spots: ['雷克雅未克旧港', '黄金圈', '维克黑沙滩', '杰古沙龙冰河湖'], food: '羊肉汤和热狗' },
+        { keys: ['大理', 'dali'], label: '苍山洱海', spots: ['大理古城', '喜洲古镇与稻田', '洱海生态廊道', '沙溪古镇'], food: '乳扇和菌子火锅' },
+        { keys: ['重庆', 'chongqing'], label: '山城迷路', spots: ['解放碑与洪崖洞', '山城步道与李子坝', '磁器口与南山', '武隆天生三桥'], food: '小面和冰粉' },
+        { keys: ['成都', 'chengdu'], label: '巴适慢生活', spots: ['宽窄巷子与人民公园', '玉林路与望平街', '大熊猫基地', '青城山'], food: '冒菜和蛋烘糕' },
+        { keys: ['西安', 'xian', "xi'an"], label: '长安旧梦', spots: ['西安城墙与钟楼', '兵马俑', '大雁塔与大唐不夜城', '华山'], food: '肉夹馍和甑糕' },
+        { keys: ['上海', 'shanghai'], label: '城市散步', spots: ['外滩与苏州河', '武康路与安福路', '豫园与城隍庙', '朱家角'], food: '生煎和小笼' },
+        { keys: ['杭州', 'hangzhou'], label: '湖边发呆', spots: ['西湖与断桥', '灵隐寺与龙井村', '小河直街', '西溪湿地'], food: '片儿川和龙井虾仁' },
+        { keys: ['厦门', 'xiamen'], label: '海风慢游', spots: ['鼓浪屿', '沙坡尾与八市', '环岛路', '集美学村'], food: '沙茶面和花生汤' },
+        { keys: ['长沙', 'changsha'], label: '烟火小城', spots: ['橘子洲与湘江边', '岳麓山与大学城', '太平老街', '谢子龙影像馆'], food: '臭豆腐和糖油粑粑' },
+        { keys: ['青岛', 'qingdao'], label: '海风散步', spots: ['栈桥与老城区', '八大关', '小麦岛', '崂山'], food: '鲅鱼饺子和袋装啤酒' },
+        { keys: ['香港', 'hong kong', 'hongkong'], label: '港岛漫游', spots: ['中环与叮叮车', '旺角与油麻地', '西贡海边', '大屿山'], food: '菠萝油和云吞面' },
+        { keys: ['新加坡', 'singapore'], label: '热带散步', spots: ['滨海湾', '牛车水与小印度', '植物园', '圣淘沙'], food: '海南鸡饭和咖椰吐司' },
+        { keys: ['曼谷', 'bangkok'], label: '热带漫游', spots: ['大皇宫与卧佛寺', '昭披耶河', '恰图恰市集', '大城府'], food: '冬阴功和芒果糯米饭' },
+        { keys: ['伦敦', 'london'], label: '英伦散步', spots: ['大英博物馆', '泰晤士河与塔桥', '诺丁山', '剑桥'], food: '炸鱼薯条和司康' },
+        { keys: ['首尔', 'seoul'], label: '首尔散步', spots: ['景福宫与北村', '弘大与延南洞', '南山首尔塔', '汉江公园'], food: '炸鸡和参鸡汤' },
+        { keys: ['新疆', 'xinjiang', '伊犁'], label: '旷野远行', spots: ['乌鲁木齐大巴扎', '赛里木湖', '那拉提草原', '喀赞其'], food: '烤包子和手抓饭' },
+        { keys: ['三亚', 'sanya'], label: '海岛放空', spots: ['亚龙湾', '后海村', '蜈支洲岛', '天涯镇'], food: '清补凉和海鲜' },
+        { keys: ['桂林', 'guilin', '阳朔'], label: '山水慢游', spots: ['象鼻山', '漓江', '阳朔西街', '龙脊梯田'], food: '桂林米粉和啤酒鱼' },
+        { keys: ['拉萨', '西藏', 'lhasa'], label: '高原慢行', spots: ['布达拉宫', '八廓街', '羊卓雍措', '纳木错'], food: '甜茶和藏面' }
+      ];
+
+      const ABROAD_KEYS = ['京都', '东京', '大阪', '巴黎', '冰岛', '香港', '新加坡', '曼谷', '伦敦', '首尔', '日本', '法国', '泰国', '英国', '韩国', '欧洲', '美国', '纽约', '清迈', '巴厘岛', '澳大利亚', '新西兰'];
+      const LOCAL_TIPS = [
+        { keys: ['京都', 'kyoto'], text: '进寺庙常要脱鞋，备一双干净袜子；公交多数后门上车、下车刷卡，部分小店只收现金。' },
+        { keys: ['东京', 'tokyo'], text: '街头垃圾桶少，随身带小垃圾袋；电车保持安静，胶囊酒店和民宿的规则要提前读。' },
+        { keys: ['大阪', 'osaka'], text: '商圈餐饮排队久，热门店先取号；自动扶梯习惯靠右站，别挡住赶车的人。' },
+        { keys: ['巴黎', 'paris'], text: '地铁和热门景点扒手多，包放身前；很多博物馆要预约，周日部分商店关门。' },
+        { keys: ['冰岛', 'iceland'], text: '天气十分钟一变，防风防水比厚衣服更重要；F 路、碎石路和加油站分布要提前查。' },
+        { keys: ['大理', 'dali'], text: '紫外线强、洱海边风大，防晒和薄外套都要带；环海交通留足时间，别赶日落。' },
+        { keys: ['重庆', 'chongqing'], text: '导航是立体的，同一地址可能在楼上或楼下；夏天闷热，爬坡多，鞋比造型重要。' },
+        { keys: ['三亚', 'sanya'], text: '防晒、驱蚊和离岸流预警要看；海鲜加工先问清单价和加工费，别只看门口招牌。' },
+        { keys: ['拉萨', '西藏', 'lhasa'], text: '第一天别洗澡、别剧烈运动；高反药、防晒和润唇膏备好，行程按身体感觉随时减量。' },
+        { keys: ['曼谷', 'bangkok', '清迈'], text: '热、晒、蚊虫和突降暴雨都要防；进寺庙遮肩膝，突突车先谈好总价。' },
+        { keys: ['新加坡', 'singapore'], text: '地铁内禁食、公共场所罚款严格；湿热多雨，随身带伞和一件薄外套应对室内冷气。' },
+        { keys: ['香港', 'hong kong'], text: '八达通和少量现金都备着；茶餐厅可能拼桌，自动扶梯靠右站，室内冷气很足。' },
+        { keys: ['伦敦', 'london'], text: '一天可能经历四季，防水外套比伞实用；过马路先看右，再养成按按钮过街的习惯。' },
+        { keys: ['首尔', 'seoul'], text: '上下坡和地铁楼梯多，穿好走的鞋；咖啡馆/餐厅可能要求一人一份，别只点一杯。' },
+        { keys: ['新疆', '伊犁', 'xinjiang'], text: '昼夜温差和紫外线都大，车上备水和零食；路程长，加油站和厕所间隔要提前规划。' },
+        { keys: ['桂林', '阳朔', 'guilin'], text: '雨季水位影响竹筏/漓江船班；乡道湿滑，骑行和徒步都别赶夜路。' }
+      ];
+      const SHOPPING_KEY = 'travel-simulator-desuwa-shopping-v2';
+      const SHOPPING_POS_KEY = 'travel-simulator-desuwa-shopping-position-v1';
+      const CHECKS_KEY = 'travel-simulator-desuwa-checks-v2';
+
+      function stageChecks(type) {
+        const abroad = type === 'abroad';
+        return [
+          {
+            id: 'plan',
+            time: 'T-6~3 个月',
+            title: '先把资格和钱准备好',
+            sub: '证件 · 签证 · 机票 · 保险',
+            icon: 'passport',
+            color: '#ffd76c',
+            checks: [
+              abroad ? '护照有效期覆盖返程后 6 个月，并至少留有 2 页空白页。' : '身份证有效期覆盖整个行程，购票/入住信息与证件完全一致。',
+              abroad ? '核对签证类型、入境次数与停留天数；经第三国转机时确认是否需要过境签。' : '查目的地是否需要实名预约、限流或提前购票，放票时间记进日历。',
+              '机票/火车票与酒店优先选可退改；确认单、保单和紧急联系人离线保存。',
+              abroad ? '开通两张不同卡组织的境外交易与取现，设好限额和支付密码。' : '准备至少两种支付方式，带少量现金，防止手机没电或信号差。',
+              '查目的地节假日、罢工、雨季/寒潮/高温，避开全城关门或交通管制的日期。',
+              abroad ? '长期停留再考虑税号/当地银行卡；短期旅行先用国际信用卡与现金。' : '确认旅行保险覆盖徒步、滑雪、自驾等计划中的活动。'
+            ],
+            pitfalls: [
+              abroad ? '换了新护照，旧护照上的有效签证不一定还能用。' : '身份证消磁或过期，取票与入住都可能卡住。',
+              '机票到达日期跨午夜或跨时区，酒店却按“出发日”订。',
+              '两段票分开买，前段延误不会保护后段。'
+            ]
+          },
+          {
+            id: 'book',
+            time: 'T-3~1 个月',
+            title: '把票、房和路线钉牢',
+            sub: '转机 · 入住 · 预约 · 备选',
+            icon: 'ticket',
+            color: '#ffb19d',
+            checks: [
+              '确认机票是联程还是分开买，行李能否直挂，转机时间是否足够。',
+              '廉航按件/重量核对行李额，登机箱轮子也算进尺寸。',
+              '查酒店前台营业时间、自助入住方式、押金和城市税。',
+              '把想去的地方按区域分组，标出开放时间/闭馆日，别把一天浪费在折返上。',
+              '核对预约制景点/餐厅的实名信息、当地时区和确认方式。',
+              '租车时确认主驾驶人、信用卡和保险是否覆盖玻璃轮胎。',
+              '每天只排一个重点，再留一个室内备选；确认单和当地文字地址离线保存。'
+            ],
+            pitfalls: [
+              '酒店在步行街或 ZTL 限行区，出租车只能停在外围。',
+              '红眼航班早上到，酒店 15:00 才能入住，需订前一晚或先寄存。',
+              '预约时段按当地时间计算，姓名拼写还必须和护照一致。',
+              '城市税/度假村费到店另收，有些地方只收现金。'
+            ]
+          },
+          {
+            id: 'pack',
+            time: 'T-7~1 天',
+            title: '按“真的会用”打包',
+            sub: '证件 · 药 · 电子 · 衣物',
+            icon: 'suitcase',
+            color: '#a9ddc7',
+            checks: [
+              '证件原件、复印件、云端照片和紧急联系人分别留一份。',
+              '充电宝随身且容量标识清楚；锂电池、处方药和贵重物品不要托运。',
+              '转换插头、电压、数据线；eSIM 提前安装并测试，离线地图和翻译包下好。',
+              '常用药保留原包装和处方；晕车药、水泡贴、补液盐、驱蚊和防晒唇膏。',
+              '按体感温度带保暖层、防水鞋、多双袜子，再备一套得体衣物。',
+              '小物：耳塞、眼罩、颈枕、折叠购物袋和门阻器，按需要带。',
+              '小面额现金/硬币、两张不同卡、防盗内袋，证件和钱包分开放。',
+              '出门前处理宠物、植物、垃圾、快递、水电和门钥匙。'
+            ],
+            pitfalls: [
+              '隐形眼镜护理液超过 100ml，随身会被拦。',
+              '含可待因/麻黄碱的感冒药，在某些国家属于违禁药。',
+              '需要脱鞋的寺庙或民宿：袜子破洞比忘带充电器更尴尬。',
+              '充电宝没有 3C 标识、鼓包或标识磨掉，安检可能直接拒绝。',
+              '牙套保持器、备用眼镜、卫生用品，总在出门后才想起来。'
+            ]
+          },
+          {
+            id: 'depart',
+            time: 'T-0 出发当天',
+            title: '从家门到安检口，都要留余量',
+            sub: '去机场/车站 · 安检 · 登机检票',
+            icon: 'plane',
+            color: '#a9d7e7',
+            checks: [
+              '出门拍一张证件、行李和随身包照片；确认护照不在托运行李里。',
+              '查实时路况和地铁故障，国际航班提前 3 小时，国内提前 2 小时。',
+              '核对机场/车站全名、航站楼、日期、车厢和座位。',
+              '液体 ≤100ml 装透明袋；充电宝、打火机和刀具按规定处理。',
+              '托运行李称重，别放锂电池、现金、药品和不可替代物品。',
+              '在线值机后仍要确认登机口和登机时间，别在免税店逛过头。'
+            ],
+            pitfalls: [
+              '城市有两个机场或同名车站，导航时选错。',
+              '护照落在安检托盘；相似行李箱被后面的人错拿。',
+              '免税店买的液体在转机时密封袋被拆开。',
+              '廉航登机口提前 20 分钟关闭，不是起飞前 20 分钟。',
+              '火车票需要取纸质票，或必须用购票证件原件进站。'
+            ]
+          },
+          {
+            id: 'transit',
+            time: '在途中',
+            title: '飞机/火车上的隐形关卡',
+            sub: '延误 · 转机 · 久坐 · 过站',
+            icon: 'train',
+            color: '#cabdf0',
+            checks: [
+              '航班延误先看官方改签/联程保护，保留延误证明和额外支出票据。',
+              '转机确认是否需要入境、过境签、重新托运和换航站楼。',
+              '每 1~2 小时起身活动、补水，穿弹力袜；耳压时咀嚼吞咽。',
+              '火车核对方向、车厢和到站时间，大件行李放在视线内。',
+              '落地前填好入境卡，地址和航班号截图，随身带一支笔。',
+              '护照、登机牌和手机不要放前排座椅口袋。'
+            ],
+            pitfalls: [
+              '跨时区后到达日期变了，接机和酒店日期没跟着改。',
+              '转机时间看似 2 小时，但换航站楼 + 入境 + 安检就不够。',
+              '夜间火车换铺、列车员收走车票，或你不小心坐过站。',
+              '机上特殊餐需提前 24 小时订，临时说没有。',
+              '久坐加脱水可能让腿肿胀，别硬扛。'
+            ]
+          },
+          {
+            id: 'arrive',
+            time: 'D1 抵达日',
+            title: '落地后的第一小时，手续最多',
+            sub: '入境 · 通讯 · 支付 · 入住',
+            icon: 'pin',
+            color: '#f5b6c7',
+            checks: [
+              abroad ? '入境：护照、签证、返程/续程票、住宿地址和资金证明放在随手可取的位置。' : '到站：身份证、车票/登机牌、行李提取凭证和接驳信息放在随手可取的位置。',
+              abroad ? '海关：食品、药品、现金按规定申报；不替陌生人带任何东西。' : '出站：核对网约车上车点、地铁末班车和打表价格。',
+              abroad ? '通讯：eSIM 打开数据漫游并检查 APN；当地 SIM 通常需要护照实名。' : '通讯：打开乘车码/地图，确认充电宝有电，保存酒店前台电话。',
+              abroad ? '支付：机场先取少量现金；刷卡选当地货币，拒绝 DCC；备用卡分开。' : '支付：确认押金方式，保留少量现金，防止手机没电。',
+              abroad ? '交通：交通卡押金/充值、公交是否找零、打车 App 是否需要当地号码。' : '交通：交通卡/乘车码、公交是否找零、夜间返程是否方便。',
+              '入住：核对押金、城市税、前台时间、房卡和消防通道。',
+              abroad ? '长期停留才办当地银行卡；一般要地址证明/税号/预约，短期游先确认手机支付和现金方案。' : '房间：检查门锁、热水、插座、空调噪音和消防通道。'
+            ],
+            pitfalls: [
+              '入境卡要写英文住宿地址，手机没网翻不出来。',
+              'eSIM 装上却打不开网，APN 没设置，叫不了车。',
+              '酒店前台 23:00 下班，自助入住码发在邮箱垃圾箱里。',
+              '押金只收信用卡，现金不够或卡被风控。',
+              '机场 ATM 吞卡，身上没有第二张卡。',
+              '酒店在单行线/步行街，司机按导航找不到入口。',
+              '时差导致吃药时间混乱。'
+            ]
+          },
+          {
+            id: 'explore',
+            time: 'D2~D4 在当地',
+            title: '把“当地”当成真实生活',
+            sub: '天气 · 身体 · 礼仪 · 安全 · 退税',
+            icon: 'sun',
+            color: '#ffe19a',
+            checks: [
+              '每天看天气预警、体感温度、日落和潮汐，不只看最高气温。',
+              '寒冷：保暖层、防风外套、手套帽子；雪地注意雪盲和结冰路面。',
+              '蚊虫：长袖长裤、含有效成分的驱蚊剂、蜱虫检查，别在草丛久坐。',
+              '身体：水泡贴、隐形眼镜润眼液、生理用品；少喝不明来源的冰块和生水。',
+              '防晒、补水和电解质；高海拔/潜水/滑雪等特殊活动先确认身体条件和保险范围。',
+              '礼仪：寺庙脱鞋、宗教场所着装、小费、用餐姿势和拍照禁忌。',
+              '安全：钱包和护照分开放，拒绝假警察查钱包，夜间走明亮大路。',
+              '购物：退税同店最低金额、护照原件、托运前盖章，商品保持未拆封。',
+              '行程：末班车、缆车、预约时段、罢工和节假日临时关门。'
+            ],
+            pitfalls: [
+              '进寺庙要脱鞋，袜子破洞；温泉有纹身限制；浴衣穿反。',
+              '公共厕所可能没纸、要收费，或纸不能直接冲。',
+              '餐厅有座位费/面包费/小费，结账才发现超预算。',
+              '退税要在托运前盖章，商品不能先用或拆封。',
+              '手机被鸟/猴子抢走，或在海滩进水。',
+              '租车加错油、停车罚单、无人机禁飞区。',
+              '民宿垃圾要自己分类带走，否则被收清洁费。',
+              '当地节日交通管制，地图上的公交信息没更新。'
+            ]
+          },
+          {
+            id: 'return',
+            time: '返程日',
+            title: '把人和东西都完整带回家',
+            sub: '退房 · 退税 · 行李 · 海关',
+            icon: 'map',
+            color: '#c4e8d8',
+            checks: [
+              '退房前检查保险箱、床底、插座、浴室、晾衣绳和冰箱。',
+              '行李称重；液体托运、充电宝随身、退税商品和单据放一起。',
+              '提前到机场，给退税/海关排队留出至少 1 小时。',
+              '返程航班/火车时刻和时区再核对一次，别按“昨天”的时间走。',
+              '纪念品查检疫规定：肉类、种子、植物、珊瑚等可能不能带。',
+              '海关申报超额物品；保存购物小票和退税凭证。',
+              '到家后检查钥匙、宠物、植物和后续请假/工作安排。'
+            ],
+            pitfalls: [
+              '护照落在酒店保险箱；充电器还插在墙上；房卡带走被收费。',
+              '退税单没盖章或退税商品已托运，钱退不到。',
+              '液体超量、充电宝托运、纪念品超重。',
+              '回国海关查肉类/水果/种子；超额未申报。',
+              '接机时间按当地时间说错，家人在机场白等。',
+              '旅行结束忘了取消漫游或自动续费。'
+            ]
+          }
+        ];
+      }
+
+      const STAGE_EVENTS = {
+        plan: [
+          {
+            id: 'passport-validity', cat: '证件', kind: 'safety', icon: 'passport', severity: 'urgent', only: 'abroad',
+            title: '护照有效期，就差那四个月',
+            text: '你翻到护照资料页才发现，返程后只剩 4 个月有效期。航司值机系统可能直接拒绝登机，而换发护照和转移签证都要时间。',
+            advice: ['先查目的地使领馆/航司的护照有效期与空白页要求，别只看网上攻略。', '立即预约换发，并确认旧护照上的有效签证是否还能配合新护照使用。', '改签前先算清补证周期，别把机票改到护照还下不来的日期。'],
+            takeaway: '护照有效期至少覆盖返程后 6 个月，并确认空白页和旧签证规则。'
+          },
+          {
+            id: 'ticket-name', cat: '票务', kind: 'transport', icon: 'ticket', severity: 'notice',
+            title: '机票姓名多了一个空格',
+            text: '值机时工作人员反复核对护照，说系统里的姓名和你护照上的拼写对不上。你才想起下单时多打了一个空格。',
+            advice: ['先让航司柜台做姓名备注/更正，保留柜台确认截屏。', '联系出票平台同步修改，别只在聊天窗口口头确认。', '若无法更正，问清退改规则；不要擅自重新买一张同班机票。'],
+            takeaway: '出票后 10 分钟内核对姓名、证件号、日期和航站楼。'
+          },
+          {
+            id: 'split-ticket', cat: '机票', kind: 'transport', icon: 'plane', severity: 'notice',
+            title: '分开买的两段票，不保护你',
+            text: '前段航班延误 3 小时，后段是你在另一个平台买的特价票。航司说两段不是联程，改签要自己承担。',
+            advice: ['先确认机票是否同一订单/联程，行李能否直挂。', '为转机留 3 小时以上，廉价航空分开买尤其危险。', '买票时加购行程变更险，保留延误证明和额外支出票据。'],
+            takeaway: '分开买的机票不是联程，前段延误不保护后段。'
+          },
+          {
+            id: 'hotel-front-desk', cat: '住宿', kind: 'logistics', icon: 'bed', severity: 'notice',
+            title: '酒店前台 23:00 下班',
+            text: '落地已经 23:40，酒店前台熄灯了。自助入住密码发在邮箱，而你只存了预订平台的聊天记录。',
+            advice: ['提前 24 小时确认前台时间和自助入住流程，把密码/门禁说明离线保存。', '把酒店地址的当地文字和入口照片发给司机。', '若错过入住，先联系平台说明，要求保留房间并确认退款政策。'],
+            takeaway: '前台时间、自助入住密码、当地文字地址，都要离线可查。'
+          },
+          {
+            id: 'card-frozen', cat: '支付', kind: 'money', icon: 'wallet', severity: 'notice',
+            title: '第一笔境外刷卡就被风控',
+            text: '酒店前台刷押金时，卡片被拒。银行短信说检测到境外交易，已临时冻结。',
+            advice: ['出发前开通境外交易、设置合理限额，并在银行 App 里确认验证方式。', '随身带第二张不同卡组织的卡和少量现金。', '当场用银行 App 解冻或拨打背面的境外服务电话，别反复刷卡。'],
+            takeaway: '至少带两张不同卡组织的卡，出发前测试境外交易和取现。'
+          },
+          {
+            id: 'old-visa', cat: '证件', kind: 'safety', icon: 'passport', severity: 'awkward', only: 'abroad',
+            title: '签证在旧护照上',
+            text: '换发新护照后，你把旧护照留在了家里。到值机柜台才想起，有效签证还在旧护照上。',
+            advice: ['查清目的地是否允许新旧护照同时使用，旧护照是否需随身携带。', '让家人把旧护照寄到机场/酒店，或联系使领馆确认补办方案。', '以后换护照时，先确认旧签证是否需要转移或更新登记。'],
+            takeaway: '旧护照上的有效签证不是自动转移，出行前查清是否需要携带旧护照。'
+          }
+        ],
+        book: [
+          {
+            id: 'ztl-hotel', cat: '住宿', kind: 'logistics', icon: 'bed', severity: 'notice',
+            title: '酒店在限行区，车进不去',
+            text: '出租车按导航开到一条石板路前停下，司机说前面是步行区。你拖着箱子绕过三个街口，才发现酒店入口在另一侧。',
+            advice: ['订房时看「车辆可达性」和最近落客点，保存入口照片。', '提前问酒店从落客点怎么走，是否有台阶或坡道。', '深夜到达时优先选可停车/24 小时前台的住处。'],
+            takeaway: '酒店在步行街、老城或 ZTL 限行区，出租车通常只能停在外围。'
+          },
+          {
+            id: 'reservation-name', cat: '预约', kind: 'logistics', icon: 'ticket', severity: 'notice',
+            title: '预约姓名和护照对不上',
+            text: '热门美术馆门口，工作人员说预约名单里没有你。你才看到预约时用了英文名，而护照是拼音全名。',
+            advice: ['预约时逐字使用护照姓名，不要用昵称或英文名。', '把预约二维码、确认邮件和护照放在一起。', '现场先找服务台说明，能改就改，不能改就换当天其他时段。'],
+            takeaway: '所有实名预约都必须和护照姓名完全一致。'
+          },
+          {
+            id: 'early-checkin', cat: '住宿', kind: 'logistics', icon: 'clock', severity: 'awkward',
+            title: '早上 8 点落地，酒店 15:00 才入住',
+            text: '红眼航班让你提前到了，但酒店要下午 3 点才能进房。你拖着两个箱子，在 lobby 坐到眼皮打架。',
+            advice: ['红眼航班抵达当天，考虑多订前一晚或选可提前入住的酒店。', '先问能否寄存行李、使用洗手间和公共休息区。', '安排一个轻量室内行程，别把第一天排成暴走。'],
+            takeaway: '红眼航班早到，酒店不一定能提前入住；订前一晚或先寄存。'
+          },
+          {
+            id: 'rental-card', cat: '租车', kind: 'money', icon: 'wallet', severity: 'notice',
+            title: '租车柜台不认你的信用卡',
+            text: '租车公司要求主驾驶人本人名下的信用卡，且额度足够冻结押金。你的卡在同行人名下，柜台直接拒绝交车。',
+            advice: ['确认主驾驶人、信用卡姓名和余额/额度要求。', '提前问清押金金额、保险起赔额和是否接受借记卡。', '保存租车确认单和驾照翻译件，留好替代交通方案。'],
+            takeaway: '租车通常要求主驾本人信用卡，押金额度也要提前确认。'
+          },
+          {
+            id: 'city-tax', cat: '住宿', kind: 'money', icon: 'coin', severity: 'awkward',
+            title: '到店才收的城市税',
+            text: '房费已经付过，前台又递来一张城市税单，只收现金。你翻遍钱包，只有一张大额钞票。',
+            advice: ['订房时看清城市税/度假村费是否另收、收多少、怎么收。', '到当地先换一些小面额现金/硬币，别只带大钞。', '保留收据，有些费用可以报销或计入旅行保险。'],
+            takeaway: '城市税、度假村费和押金常常到店另收，提前确认支付方式。'
+          }
+        ],
+        pack: [
+          {
+            id: 'powerbank-label', cat: '电子', kind: 'logistics', icon: 'phone', severity: 'notice',
+            title: '充电宝的容量标识磨掉了',
+            text: '安检员把你的充电宝翻来覆去看了两遍，说容量标识看不清，不能带上飞机。你明明记得它只有 10000mAh。',
+            advice: ['换一个有清晰 3C/容量标识、没有鼓包的充电宝。', '充电宝只能随身，不能托运；提前查航司容量上限。', '把充电宝和线放在随手可取的位置，安检时单独取出。'],
+            takeaway: '充电宝要标识清楚、无鼓包，且只能随身携带。'
+          },
+          {
+            id: 'meds-banned', cat: '药品', kind: 'health', icon: 'shield', severity: 'urgent',
+            title: '感冒药里藏着违禁成分',
+            text: '海关查到你的感冒药含有可待因/麻黄碱成分，属于当地管制药物。你只是怕路上感冒，完全没想过要申报。',
+            advice: ['出发前查目的国对常用药成分的限制，尤其是复方感冒药。', '处方药保留原包装、处方和英文说明；必要时提前申请许可。', '不确定就不要带，到当地药店说明症状再买。'],
+            takeaway: '含可待因/麻黄碱的常用药可能是违禁药，出发前逐项核对。'
+          },
+          {
+            id: 'socks-temple', cat: '礼仪', kind: 'social', icon: 'suitcase', severity: 'awkward',
+            title: '进寺庙要脱鞋，袜子破了个洞',
+            text: '你在门口脱下鞋，才发现右脚袜子在脚趾处开了口。所有人都在安静地往里走，你只能把脚往裤腿里缩。',
+            advice: ['出发前检查要脱鞋场所的袜子，带一双干净备用袜。', '穿透脱方便的鞋，别穿复杂绑带或难闻的鞋。', '把备用袜、湿巾和小塑料袋放在随身包里。'],
+            takeaway: '去寺庙、民宿、温泉前，备一双干净袜子，比多带一件衣服更实用。'
+          },
+          {
+            id: 'lens-liquid', cat: '安检', kind: 'logistics', icon: 'suitcase', severity: 'notice',
+            title: '护理液 120ml，被拦在安检口',
+            text: '隐形眼镜护理液还剩大半瓶，你觉得「应该没关系」。安检员指着瓶身：超过 100ml，不能随身。',
+            advice: ['随身液体单瓶不超过 100ml，全部装进可封口透明袋。', '护理液可分装小瓶，或到当地买小包装。', '隐形眼镜盒、备用镜片和润眼液放在随身包，不要托运。'],
+            takeaway: '护理液按液体规定处理；隐形眼镜相关物品一定随身。'
+          },
+          {
+            id: 'cold-layers', cat: '天气', kind: 'weather', icon: 'wind', severity: 'notice',
+            title: '气温 12℃，体感却像 3℃',
+            text: '你按天气预报带了薄外套，到了海边才发现风大得站不稳。湿冷钻进骨头，拍照的手一直在抖。',
+            advice: ['查体感温度、风力和湿度，不只穿“最高气温”对应的衣服。', '带可叠穿的保暖层、防风外套和帽子手套。', '鞋要防水防滑；袜子多带一双，湿了马上换。'],
+            takeaway: '海边、山区和高海拔地区，体感温度往往比预报低很多。'
+          },
+          {
+            id: 'no-adapter', cat: '电子', kind: 'logistics', icon: 'phone', severity: 'awkward',
+            title: '转换插头只带了一个',
+            text: '手机、相机、充电宝都要充电，你却只带了一个转换插头。晚上轮流充电，第二天相机还是没满电。',
+            advice: ['按设备数量带插头，或多带一个多口 USB 充电器。', '确认目的地电压；卷发棒/吹风机可能需要变压器。', '把转换插头放在随身包，别全塞进托运行李。'],
+            takeaway: '转换插头至少两个，并确认电压，不要只带一个。'
+          }
+        ],
+        depart: [
+          {
+            id: 'wrong-airport', cat: '交通', kind: 'transport', icon: 'plane', severity: 'urgent',
+            title: '城市有两个机场',
+            text: '你按“机场”搜索导航，到了柜台才发现，国际航班在另一座机场。两个机场相距 70 公里，值机还有 40 分钟截止。',
+            advice: ['出发前核对机票上的机场三字码、航站楼和值机截止时间。', '立刻查跨机场交通，同时联系航司问晚到改签。', '以后把机场全名+航站楼写进日程，不要只写“机场”。'],
+            takeaway: '一座城市可能有多个机场，机票上的机场代码和航站楼都要核对。'
+          },
+          {
+            id: 'security-tray', cat: '安检', kind: 'safety', icon: 'passport', severity: 'urgent',
+            title: '护照忘在安检托盘里',
+            text: '过完安检，你抱起背包就往登机口走。十分钟后摸口袋，护照和登机牌都不见了，应该还在那个灰色塑料托盘里。',
+            advice: ['过安检时把护照、登机牌和手机放同一个固定小袋，最后再拿。', '发现丢失立刻返回安检口，联系安检/失物招领。', '登机口工作人员也能协助核对身份，但越早越好。'],
+            takeaway: '安检托盘是证件丢失高发地，所有东西归位后再离开。'
+          },
+          {
+            id: 'checkin-cutoff', cat: '登机', kind: 'transport', icon: 'clock', severity: 'urgent',
+            title: '登机口提前 20 分钟关闭',
+            text: '你以为起飞前 20 分钟到登机口就来得及，结果柜台已经关闭。航司说登机口提前 20 分钟关闭，而你理解成了起飞前 20 分钟。',
+            advice: ['看清登机牌上的登机时间，不要只看到起飞时间。', '廉航和中转航班尤其要早到，登机口可能提前关闭。', '误机后立刻去航司柜台问改签，不要在网上反复刷。'],
+            takeaway: '登机口关闭时间通常早于起飞时间，按登机牌上的登机时间为准。'
+          },
+          {
+            id: 'airport-traffic', cat: '交通', kind: 'transport', icon: 'clock', severity: 'urgent',
+            title: '去机场的高架突然封路',
+            text: '离值机截止还有 50 分钟，导航突然把路线改成一条深红色拥堵。前方事故封了两条车道，附近又没有地铁站。',
+            advice: ['立刻切换机场快线/地铁，哪怕多走一段，不要只等车流恢复。', '同时联系航司，问网上值机或晚到柜台能否保留座位。', '下次把“最晚到机场时间”和两条备选路线写进日历。'],
+            takeaway: '去机场至少准备两条路线，并按值机截止时间倒推出发。'
+          },
+          {
+            id: 'paper-ticket', cat: '火车', kind: 'transport', icon: 'ticket', severity: 'notice',
+            title: '火车票要取纸质票',
+            text: '你拿着手机二维码进站，闸机却一直不开。工作人员说这趟车必须取纸质票，而取票窗口在另一层，排队很长。',
+            advice: ['提前查清是电子票、纸质票还是需要证件原件进站。', '需要取票就提前到站，别把时间卡在发车前十分钟。', '把取票凭证和购票证件放在同一个口袋。'],
+            takeaway: '不是所有火车票都能刷二维码，提前确认取票和进站规则。'
+          },
+          {
+            id: 'duty-free-bag', cat: '转机', kind: 'logistics', icon: 'suitcase', severity: 'notice',
+            title: '免税品密封袋被拆开',
+            text: '你在机场买了免税液体，转机安检时工作人员说密封袋已拆，不能带上下一程。你只好现场丢弃或重新托运。',
+            advice: ['免税液体保持密封袋完整，收据和商品放在一起。', '转机若需重新安检，提前确认是否允许携带免税液体。', '大件免税品尽量留到最后一程购买。'],
+            takeaway: '免税液体密封袋不要拆，转机前确认是否需要重新安检。'
+          },
+          {
+            id: 'similar-luggage', cat: '行李', kind: 'logistics', icon: 'suitcase', severity: 'awkward',
+            title: '相似箱子被错拿',
+            text: '行李转盘上只剩一个和你几乎同款的黑色箱子。你推着它回到酒店，打开才发现里面不是你的东西。',
+            advice: ['给箱子加醒目标识，行李牌写电话但不要写家庭住址。', '拿行李时核对行李条编号，不要只看颜色和外形。', '发现错拿立刻联系机场行李服务，别自行开箱翻找。'],
+            takeaway: '给行李做独特标记，并核对行李条编号，不要只看外观。'
+          }
+        ],
+        transit: [
+          {
+            id: 'missed-connection', cat: '转机', kind: 'transport', icon: 'clock', severity: 'urgent',
+            title: '转机只剩 25 分钟',
+            text: '前段航班晚到，下一程登机口在另一座航站楼。你一路狂奔，还是看着登机口在眼前关闭。',
+            advice: ['买票时给转机留足 3 小时以上，跨航站楼再放宽。', '前段延误时立刻找航司/地面服务，确认是否保护后段。', '保留延误证明、登机牌和改签记录，后续索赔用得上。'],
+            takeaway: '转机时间要按航站楼、入境和安检一起算，不要只看飞行时长。'
+          },
+          {
+            id: 'transit-visa', cat: '签证', kind: 'safety', icon: 'passport', severity: 'urgent', only: 'abroad',
+            title: '转机国要过境签',
+            text: '你以为只是在第三国转机，不需要签证。值机时航司却要求出示过境签，否则不能登机。',
+            advice: ['确认转机是否需要入境、换航站楼或重新托运。', '查转机国对中国护照的过境签/免签条件，以官方为准。', '尽量选同一航站楼、行李直挂、无需入境的联程航班。'],
+            takeaway: '转机不等于免签，过境签和行李直挂要提前确认。'
+          },
+          {
+            id: 'date-line', cat: '时区', kind: 'logistics', icon: 'clock', severity: 'awkward',
+            title: '跨过日期变更线，到达日期变了',
+            text: '你订了“次日到达”的接机，飞机却因为跨日期变更线提前一天落地。酒店和接机都按错误日期安排。',
+            advice: ['以机票上的当地到达日期和时间为准，重新核对酒店入住日。', '把航班号发给接机人，不要只报“明天几点”。', '跨时区航班落地后先看手机自动更新时间，再安排后续。'],
+            takeaway: '跨时区/日期变更线时，到达日期可能和出发日期不是同一天。'
+          },
+          {
+            id: 'train-direction', cat: '火车', kind: 'transport', icon: 'train', severity: 'notice',
+            title: '上错方向，越坐越远',
+            text: '你看到站台上来了一列车，门一开就上去了。十分钟后广播报的下一站，和你计划的方向完全相反。',
+            advice: ['上车前核对车次、终点站和站台显示屏。', '发现坐反立刻在下一站下车，找工作人员确认回程方向。', '把车次和到站时间截图，别只记“几点那趟”。'],
+            takeaway: '上车前核对车次和终点站，不要只看站台和时间。'
+          },
+          {
+            id: 'leg-swelling', cat: '身体', kind: 'health', icon: 'heart', severity: 'notice',
+            title: '久坐之后，腿肿了',
+            text: '长途飞行后，你的脚踝肿得鞋都变紧。你以为是小事，直到小腿开始发胀发痛。',
+            advice: ['长途飞行每 1~2 小时起身活动，穿弹力袜，少喝酒多喝水。', '小腿单侧肿胀、发热或疼痛要尽快就医，不要按摩。', '有血栓史/近期手术史，出发前先问医生。'],
+            takeaway: '长途久坐要活动+补水，单侧腿肿痛别硬扛。'
+          }
+        ],
+        arrive: [
+          {
+            id: 'entry-card', cat: '入境', kind: 'safety', icon: 'passport', severity: 'notice', only: 'abroad',
+            title: '入境卡要写英文地址',
+            text: '空乘发入境卡时，你才发现手机没网，酒店地址只有中文截图。你盯着“Address in {dest}”一栏，笔尖悬了半天。',
+            advice: ['提前把酒店英文地址、电话和航班号离线截图。', '随身带一支笔，入境卡在落地前填好。', '不确定的栏目空着，排队时问工作人员，别乱填。'],
+            takeaway: '入境卡通常要英文住宿地址，提前离线保存并随身带笔。'
+          },
+          {
+            id: 'esim-apn', cat: '通讯', kind: 'logistics', icon: 'phone', severity: 'notice',
+            title: 'eSIM 装好了，却没有网',
+            text: '飞机落地，你打开 eSIM，信号栏却一直转圈。没有网络，叫不了车，也查不了酒店地址。',
+            advice: ['出发前按说明安装 eSIM 并测试，保存 APN 设置。', '落地后打开数据漫游，手动选运营商，重启一次。', '保留实体 SIM/国际漫游作为备用，别把唯一通讯方式押在 eSIM 上。'],
+            takeaway: 'eSIM 要提前测试，APN 和备用网络方案都要准备好。'
+          },
+          {
+            id: 'deposit-card', cat: '住宿', kind: 'money', icon: 'wallet', severity: 'notice',
+            title: '押金只收信用卡',
+            text: '酒店前台要求用信用卡预授权押金，你的卡被风控，另一张卡又没带。前台表示没有押金不能给房卡。',
+            advice: ['订房时确认押金金额和支付方式，带一张额度充足的信用卡。', '提前开通境外交易，保存银行境外服务电话。', '实在不行，问能否用现金押金或换一家可入住的酒店。'],
+            takeaway: '酒店押金常只收信用卡，额度、境外交易和备用卡都要提前确认。'
+          },
+          {
+            id: 'atm-swallow', cat: '支付', kind: 'money', icon: 'wallet', severity: 'urgent',
+            title: 'ATM 吞了你的卡',
+            text: '机场 ATM 屏幕闪了两下，卡被吞了。你身上只有手机，而手机支付在柜台又用不了。',
+            advice: ['优先用有银行网点的 ATM，操作时留意是否有异常装置。', '卡被吞立刻联系机器所属银行和发卡行，保留机器编号和凭条。', '现金、备用卡和手机支付至少留两种可用。'],
+            takeaway: '别把支付方式押在一张卡上，ATM 吞卡要留凭条并联系银行。'
+          },
+          {
+            id: 'address-language', cat: '交通', kind: 'social', icon: 'pin', severity: 'awkward',
+            title: '司机看不懂酒店地址',
+            text: '你把中文酒店名给出租车司机看，他摇摇头。电话打过去，前台说的街名你也听不懂。',
+            advice: ['保存酒店地址的当地文字、电话和地图定位。', '让酒店发一份“给司机看”的当地语言地址。', '上车前确认打表/价格，避免被带到错误地点。'],
+            takeaway: '酒店地址要存当地文字版本，不能只保存中文名。'
+          },
+          {
+            id: 'local-bank', cat: '长期停留', kind: 'money', icon: 'bank', severity: 'notice', only: 'abroad',
+            title: '开当地银行卡，比想象中麻烦',
+            text: '你打算长住，听说办当地银行卡方便，到了银行才发现要地址证明、税号、预约，账户还有月费。',
+            advice: ['短期旅行不需要开当地账户，先用国际信用卡+少量现金。', '长期停留先查开户所需材料、月费、转账和取现规则。', '有的国家可用数字银行/多币种账户替代，先确认工资和房租怎么收。'],
+            takeaway: '当地银行卡不是落地必办项；长期停留才评估材料、费用和替代方案。'
+          }
+        ],
+        explore: [
+          {
+            id: 'toilet-paper', cat: '尴尬', kind: 'social', icon: 'door', severity: 'awkward',
+            title: '厕所里没有纸',
+            text: '你走进公共厕所，关上门才发现纸盒是空的，包里也没有纸巾。手机还剩 8% 电，门外有人在等。',
+            advice: ['随身带小包纸巾/湿巾，比带一堆“可能用得上”的东西更实际。', '先看隔间是否有纸/是否收费，再决定进哪一间。', '有些地方厕纸不能冲，按现场标识处理。'],
+            takeaway: '小包纸巾和湿巾是旅行里最容易被低估的必需品。'
+          },
+          {
+            id: 'water-ice', cat: '饮食', kind: 'health', icon: 'food', severity: 'urgent',
+            title: '一杯冰水放倒了胃',
+            text: '路边摊的冰饮看起来很诱人，你喝完后半夜开始腹痛。第二天还有一整天的行程。',
+            advice: ['在自来水不可直饮的地区，避免来源不明的冰块和生水。', '随身带补液盐和肠胃药，出现发热/血便及时就医。', '尝鲜少量，别在重要行程前一晚挑战肠胃。'],
+            takeaway: '自来水不能直饮的地方，冰块和生食也要谨慎。'
+          },
+          {
+            id: 'mosquito', cat: '自然', kind: 'health', icon: 'shield', severity: 'notice',
+            title: '黄昏的湖边，蚊虫像云',
+            text: '你穿着短裤在湖边等日落，十分钟后脚踝被咬了一圈。第二天肿得又痒又痛，走路都难受。',
+            advice: ['黄昏和清晨减少在草丛/水边久坐，穿长裤和袜子。', '用含有效成分的驱蚊剂，按说明补涂；回到住处检查蜱虫。', '被咬后别抓破，冷敷/止痒药膏，出现发热及时就医。'],
+            takeaway: '自然环境的蚊虫比城市多，长裤、驱蚊剂和蜱虫检查都要准备。'
+          },
+          {
+            id: 'tax-refund', cat: '退税', kind: 'money', icon: 'ticket', severity: 'notice',
+            title: '退税要在托运前盖章',
+            text: '你把退税商品塞进托运行李，过了安检才看到“海关盖章处”在出发大厅。现在商品已经托运，退税单还没盖章。',
+            advice: ['先确认退税流程：海关盖章在托运前还是安检后。', '退税商品、单据和护照放一起，保持未拆封/可使用状态。', '给退税排队留至少 1 小时，别卡着登机时间去。'],
+            takeaway: '退税通常在托运前盖章，商品和单据不要先收进托运行李。'
+          },
+          {
+            id: 'restaurant-fee', cat: '餐饮', kind: 'money', icon: 'coin', severity: 'awkward',
+            title: '账单里多了座位费和面包费',
+            text: '你只点了一份主菜，结账时却发现多了座位费、面包费和刷卡手续费。预算一下被吃掉一截。',
+            advice: ['进店前看菜单小字/门口价目，确认是否收座位费/服务费。', '点餐时问清面包、水和小食是否收费。', '刷卡前核对总价，保留小票，发现问题当场询问。'],
+            takeaway: '餐厅的座位费、面包费和小费可能另算，点单前先问清。'
+          },
+          {
+            id: 'last-tram', cat: '交通', kind: 'transport', icon: 'clock', severity: 'urgent',
+            title: '末班车比你想象中早',
+            text: '夜景看完已经 22:10，你走到车站才发现末班车 21:50 已经开走。打车软件显示排队 40 分钟。',
+            advice: ['每天确认末班车/末班缆车时间，按结束时间倒推行程。', '夜间优先在人多明亮处等正规出租车/夜班巴士。', '住得远时，宁可提前回，也别把回程押在“应该还有车”上。'],
+            takeaway: '末班车时间要每天确认，夜景行程必须留回程余量。'
+          },
+          {
+            id: 'cold-snap', cat: '天气', kind: 'weather', icon: 'wind', severity: 'notice',
+            title: '突然降温，衣服带少了',
+            text: '白天还阳光明媚，傍晚冷风一起，温度掉了 10℃。你只有一件薄外套，开始流鼻涕。',
+            advice: ['出发前看 48 小时天气趋势和体感温度，带可叠穿保暖层。', '随身带薄羽绒/防风外套，别全放在酒店。', '受凉后先回住处加衣、喝热水，别硬撑继续夜游。'],
+            takeaway: '天气突变时，随身保暖层比在酒店留一堆厚衣服更有用。'
+          }
+        ],
+        return: [
+          {
+            id: 'safe-passport', cat: '证件', kind: 'safety', icon: 'bed', severity: 'urgent',
+            title: '护照落在酒店保险箱',
+            text: '到机场办登机时，你才发现护照还在酒店保险箱里。出租车已经走了，登机时间只剩两小时。',
+            advice: ['退房前把保险箱、抽屉、床底和插座都检查一遍。', '立刻联系酒店确认护照还在，安排送回或自己回去取。', '把护照复印件/照片放云端，但复印件不能代替原件登机。'],
+            takeaway: '退房前做一次“保险箱—插座—浴室—床底”四步检查。'
+          },
+          {
+            id: 'tax-stamp', cat: '退税', kind: 'money', icon: 'ticket', severity: 'notice',
+            title: '退税单没盖章，钱退不到',
+            text: '你到机场才发现退税单需要在海关盖章，而排队的人已经绕了一圈。登机口开始广播，你只能放弃。',
+            advice: ['提前查退税截止点和排队时间，给海关留 1 小时。', '退税单、护照、商品和登机牌放同一个文件袋。', '若时间不够，问清能否邮寄补办或下次入境处理。'],
+            takeaway: '退税要预留排队时间，单据没盖章通常退不到钱。'
+          },
+          {
+            id: 'overweight', cat: '行李', kind: 'logistics', icon: 'suitcase', severity: 'notice',
+            title: '伴手礼让行李超重',
+            text: '回程值机时，箱子比来时重了 8 公斤。超重费比伴手礼还贵，你站在柜台前开始重新分配。',
+            advice: ['出发前查回程行李额，买伴手礼时留出重量余量。', '把重物放随身包，液体和超规物品按规定托运。', '提前在线购买行李额，通常比机场现场便宜。'],
+            takeaway: '回程行李额要提前算，伴手礼别把重量余量吃光。'
+          },
+          {
+            id: 'customs-food', cat: '海关', kind: 'safety', icon: 'shield', severity: 'notice',
+            title: '伴手礼过不了海关',
+            text: '你带回了当地香肠、水果干和一小袋种子，海关说这些属于禁止入境物品，只能当场丢弃。',
+            advice: ['回国前查海关禁限物品清单：肉类、水果、种子、植物等。', '不确定就申报，不要抱着“应该没事”的心态闯关。', '选择正规包装、可申报的伴手礼，保留购物小票。'],
+            takeaway: '肉类、水果、种子和植物制品常被禁止入境，买前先查海关规定。'
+          },
+          {
+            id: 'return-time', cat: '时间', kind: 'logistics', icon: 'clock', severity: 'awkward',
+            title: '接机时间说错了时区',
+            text: '你跟家人说“明天下午 3 点到”，却忘了那是当地时间。家人在机场等了两个小时，你的航班还没起飞。',
+            advice: ['把航班号和当地到达时间一起发给接机人。', '跨时区时明确写“当地时间”，并让对方查航班动态。', '落地后先连网报平安，再安排接机。'],
+            takeaway: '接机信息要写航班号+当地时间，不要只报一个模糊的“下午到”。'
+          }
+        ]
+      };
+
+      const SEVERITY = {
+        minor: { label: '小插曲' },
+        notice: { label: '需要留意' },
+        awkward: { label: '尴尬预警' },
+        urgent: { label: '紧急' }
+      };
+
+      const state = {
+        destination: '',
+        travelType: 'domestic',
+        typeOverride: false,
+        stages: [],
+        activeStage: 0,
+        currentEventStage: -1,
+        events: [],
+        recentEventIds: [],
+        checked: {},
+        generated: false
+      };
+
+      const form = $('#destinationForm');
+      const destinationInput = $('#destination');
+      const startBtn = $('#startBtn');
+      const startLabel = $('#startLabel');
+      const randomDestBtn = $('#randomDest');
+      const travelTypeGroup = $('#travelTypeGroup');
+      const typeHint = $('#typeHint');
+      const plannerHintText = $('#plannerHintText');
+      const routeTitle = $('#routeTitle');
+      const journeyMeta = $('#journeyMeta');
+      const emptyJourney = $('#emptyJourney');
+      const phaseList = $('#phaseList');
+      const journeySummary = $('#journeySummary');
+      const summaryTitle = $('#summaryTitle');
+      const summarySub = $('#summarySub');
+      const summaryChecks = $('#summaryChecks');
+      const summaryEventsEl = $('#summaryEvents');
+      const summaryPercent = $('#summaryPercent');
+      const summaryBar = $('#summaryBar');
+      const summaryProgress = $('#summaryProgress');
+      const journeyLocal = $('#journeyLocal');
+      const readinessTrack = $('#readinessTrack');
+      const rerollBtn = $('#rerollBtn');
+      const eventStageChip = $('#eventStageChip');
+      const eventList = $('#eventList');
+      const eventProgress = $('#eventProgress');
+      const progressCount = $('#progressCount');
+      const progressFill = $('#progressFill');
+      const progressHint = $('#progressHint');
+      const progressTrack = $('#progressTrack');
+      const shoppingForm = $('#shoppingForm');
+      const shoppingInput = $('#shoppingInput');
+      const shoppingList = $('#shoppingList');
+      const shoppingEmpty = $('#shoppingEmpty');
+      const shoppingCount = $('#shoppingCount');
+      const shoppingSummary = $('#shoppingSummary');
+      const clearBoughtBtn = $('#clearBoughtBtn');
+      const shoppingSlot = $('#shoppingSlot');
+      const shoppingCard = $('#shoppingCard');
+      const shoppingHandle = $('#shoppingHandle');
+      const shoppingModeBtn = $('#shoppingModeBtn');
+      const shoppingModeLabel = $('#shoppingModeLabel');
+      const shoppingSlotHint = $('#shoppingSlotHint');
+      const shoppingDockLink = $('#shoppingDockLink');
+      const notes = $('#notes');
+      const charCount = $('#charCount');
+      const saveStatus = $('#saveStatus');
+      const saveText = $('#saveText');
+      const noteSheet = $('#noteSheet');
+      const clearBtn = $('#clearBtn');
+      const clearLabel = $('#clearLabel');
+      const toast = $('#toast');
+
+      let toastTimer = null;
+      let saveTimer = null;
+      let clearTimer = null;
+      let clearArmed = false;
+      let shopping = [];
+      let shoppingDrag = null;
+      let shoppingResizeTimer = null;
+
+      function escapeHTML(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function formatEventText(value, destination) {
+        return escapeHTML(String(value).replaceAll('{dest}', destination));
+      }
+
+      function shuffle(items) {
+        const copy = items.slice();
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function getPack(destination) {
+        const normalized = destination.toLowerCase();
+        return PACKS.find((pack) => pack.keys.some((key) => normalized.includes(key.toLowerCase()))) || null;
+      }
+
+      function inferTravelType(destination) {
+        const normalized = destination.toLowerCase();
+        return ABROAD_KEYS.some((key) => normalized.includes(key.toLowerCase())) ? 'abroad' : 'domestic';
+      }
+
+      function getLocalTip(destination) {
+        const normalized = destination.toLowerCase();
+        const entry = LOCAL_TIPS.find((item) => item.keys.some((key) => normalized.includes(key.toLowerCase())));
+        return entry ? entry.text : '';
+      }
+
+      function getStageEventCount() {
+        return Object.values(STAGE_EVENTS).reduce((sum, list) => sum + list.length, 0);
+      }
+
+      function checkKey(stage, index) {
+        return `${stage.id}:${index}`;
+      }
+
+      function comboKey(destination, type) {
+        return `${destination.trim().toLowerCase()}|${type}`;
+      }
+
+      function loadChecked(destination, type) {
+        try {
+          const all = JSON.parse(window.localStorage.getItem(CHECKS_KEY) || '{}');
+          const saved = all[comboKey(destination, type)];
+          return saved && typeof saved === 'object' ? saved : {};
+        } catch (error) {
+          return {};
+        }
+      }
+
+      function persistChecked() {
+        try {
+          const all = JSON.parse(window.localStorage.getItem(CHECKS_KEY) || '{}');
+          all[comboKey(state.destination, state.travelType)] = state.checked;
+          window.localStorage.setItem(CHECKS_KEY, JSON.stringify(all));
+        } catch (error) {
+          // Local storage may be unavailable; the page still works for this session.
+        }
+      }
+
+      function totalCheckpoints() {
+        return state.stages.reduce((sum, stage) => sum + stage.checks.length, 0);
+      }
+
+      function checkedCountForStage(stage) {
+        return stage.checks.reduce((sum, _, index) => sum + (state.checked[checkKey(stage, index)] ? 1 : 0), 0);
+      }
+
+      function setTravelTypeUI(type, isAuto) {
+        $$('#travelTypeGroup button').forEach((button) => {
+          const active = button.dataset.type === type;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        if (isAuto === false) {
+          typeHint.textContent = type === 'abroad'
+            ? '已手动设为出境游 · 已加入入境、通讯、境外支付与当地银行手续。'
+            : '已手动设为境内游 · 将按国内证件、交通与预约流程准备。';
+        } else {
+          typeHint.textContent = type === 'abroad'
+            ? '已自动识别为出境游 · 已加入入境、通讯、境外支付与当地银行手续。'
+            : '已自动识别为境内游 · 如需出境手续，请手动切换。';
+        }
+        plannerHintText.textContent = type === 'abroad'
+          ? '从抢票、签证、打包、转机、入境，到当地礼仪和返程退税，每个阶段都可能出其不意。'
+          : '从抢票、证件、打包、换乘、入住，到当地礼仪和返程退改，每个阶段都可能出其不意。';
+      }
+
+      function pickStageEvents(stageIndex) {
+        const stage = state.stages[stageIndex];
+        if (!stage) return [];
+        let pool = (STAGE_EVENTS[stage.id] || []).filter((event) => !event.only || event.only === state.travelType);
+        if (pool.length < 3) pool = STAGE_EVENTS[stage.id] || [];
+        let candidates = pool.filter((event) => !state.recentEventIds.includes(event.id));
+        if (candidates.length < 3) candidates = pool;
+        const picked = shuffle(candidates).slice(0, 3);
+        state.recentEventIds = picked.map((event) => event.id);
+        state.currentEventStage = stageIndex;
+        return picked.map((event) => ({ ...event, solved: false }));
+      }
+
+      function updateSummary() {
+        if (!state.stages.length) return;
+        const total = totalCheckpoints();
+        const done = state.stages.reduce((sum, stage) => sum + checkedCountForStage(stage), 0);
+        const percent = total ? Math.round((done / total) * 100) : 0;
+        summaryChecks.textContent = String(total);
+        summaryEventsEl.textContent = String(getStageEventCount());
+        summaryPercent.textContent = `${percent}%`;
+        summaryBar.style.width = `${percent}%`;
+        summaryProgress.textContent = `已勾选 ${done} / ${total} 项`;
+        readinessTrack.setAttribute('aria-valuenow', String(percent));
+      }
+
+      function updateStageCount(index) {
+        const stage = state.stages[index];
+        if (!stage) return;
+        const done = checkedCountForStage(stage);
+        const badge = phaseList.querySelector(`.phase-count[data-count="${index}"]`);
+        if (badge) {
+          badge.textContent = `${done} / ${stage.checks.length}`;
+          badge.classList.toggle('is-complete', done === stage.checks.length);
+        }
+        updateSummary();
+      }
+
+      function renderJourney() {
+        const total = totalCheckpoints();
+        routeTitle.textContent = `${state.destination} · 从订票到回家`;
+        journeyMeta.hidden = false;
+        journeyMeta.innerHTML = `<span>8 STAGES</span><span>${state.travelType === 'abroad' ? '出境游' : '境内游'}</span>`;
+        journeySummary.hidden = false;
+        summaryTitle.textContent = `${state.destination} · 第一视角全流程预演`;
+        summarySub.innerHTML = `${state.travelType === 'abroad' ? '出境游' : '境内游'} · 8 个阶段、${total} 个检查点。先过流程，再挑最容易被忽略的细节。`;
+        const localTip = getLocalTip(state.destination);
+        if (localTip) {
+          journeyLocal.hidden = false;
+          journeyLocal.innerHTML = `<svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span><b>本地提醒</b>${escapeHTML(localTip)}</span>`;
+        } else {
+          journeyLocal.hidden = true;
+          journeyLocal.innerHTML = '';
+        }
+        summaryChecks.textContent = String(total);
+        summaryEventsEl.textContent = String(getStageEventCount());
+        updateSummary();
+      }
+
+      function renderPhases() {
+        phaseList.innerHTML = state.stages.map((stage, index) => {
+          const done = checkedCountForStage(stage);
+          const open = index === state.activeStage;
+          const checks = stage.checks.map((text, checkIndex) => {
+            const key = checkKey(stage, checkIndex);
+            const checked = Boolean(state.checked[key]);
+            return `
+              <label class="phase-check">
+                <input type="checkbox" data-check-stage="${index}" data-check-index="${checkIndex}" ${checked ? 'checked' : ''}>
+                <span>${escapeHTML(text)}</span>
+              </label>
+            `;
+          }).join('');
+          const pitfalls = stage.pitfalls.map((text) => `<li>${escapeHTML(text)}</li>`).join('');
+          return `
+            <article class="phase-card${open ? ' is-open' : ''}" data-phase="${index}">
+              <button class="phase-toggle" type="button" aria-expanded="${open}" aria-controls="phase-body-${index}">
+                <span class="phase-dot" style="--stage-color:${stage.color}">${String(index + 1).padStart(2, '0')}</span>
+                <span class="phase-heading">
+                  <span class="phase-time">${escapeHTML(stage.time)}</span>
+                  <span class="phase-title">${escapeHTML(stage.title)}</span>
+                  <span class="phase-sub">${escapeHTML(stage.sub)}</span>
+                </span>
+                <span class="phase-count${done === stage.checks.length ? ' is-complete' : ''}" data-count="${index}">${done} / ${stage.checks.length}</span>
+                <svg class="icon phase-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+              </button>
+              <div class="phase-body" id="phase-body-${index}">
+                <ul class="phase-checks">${checks}</ul>
+                <div class="phase-pitfalls">
+                  <span class="phase-pitfalls-title"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>最容易漏掉</span>
+                  <ul>${pitfalls}</ul>
+                </div>
+                <button class="phase-simulate" type="button" data-simulate="${index}">
+                  预演这一阶段的 3 个意外
+                  <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+                </button>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        emptyJourney.hidden = true;
+        phaseList.hidden = false;
+      }
+
+      function openStage(index) {
+        state.activeStage = index;
+        $$('.phase-card', phaseList).forEach((card, cardIndex) => {
+          const open = cardIndex === index;
+          card.classList.toggle('is-open', open);
+          const toggle = $('.phase-toggle', card);
+          if (toggle) toggle.setAttribute('aria-expanded', String(open));
+        });
+        if (state.currentEventStage !== index) {
+          state.events = pickStageEvents(index);
+          renderEvents();
+        }
+      }
+
+      function renderEvents() {
+        const events = state.events;
+        const stage = state.stages[state.activeStage];
+        if (stage) {
+          eventStageChip.innerHTML = `<svg class="icon" aria-hidden="true"><use href="#i-${stage.icon}"/></svg>STAGE ${String(state.activeStage + 1).padStart(2, '0')} · ${escapeHTML(stage.time)} · ${escapeHTML(stage.title)}`;
+        }
+
+        eventList.innerHTML = events.map((event, index) => {
+          const severity = SEVERITY[event.severity] || SEVERITY.notice;
+          const solved = Boolean(event.solved);
+          return `
+            <article class="event-card${solved ? ' is-solved' : ''}" style="--i:${index}">
+              <div class="event-head">
+                <span class="event-icon kind-${event.kind}" aria-hidden="true">
+                  <svg class="icon"><use href="#i-${event.icon}"/></svg>
+                </span>
+                <span class="event-cat">${escapeHTML(event.cat)}</span>
+                <span class="severity severity--${event.severity}">${severity.label}</span>
+              </div>
+              <h4>${formatEventText(event.title, state.destination)}</h4>
+              <p>${formatEventText(event.text, state.destination)}</p>
+              <details class="event-advice">
+                <summary>
+                  <span>翻开应对卡</span>
+                  <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>
+                </summary>
+                <div class="advice-body">
+                  <ul>${event.advice.map((item) => `<li>${formatEventText(item, state.destination)}</li>`).join('')}</ul>
+                </div>
+              </details>
+              <div class="event-actions">
+                <button class="note-btn" type="button" data-action="note" data-index="${index}">
+                  <svg class="icon" aria-hidden="true"><use href="#i-notebook"/></svg>
+                  抄进笔记
+                </button>
+                <button class="solve-btn${solved ? ' is-solved' : ''}" type="button" data-action="solve" data-index="${index}" aria-pressed="${solved}">
+                  <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                  ${solved ? '已准备好' : '我准备好了'}
+                </button>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        eventProgress.hidden = false;
+        updateProgress();
+      }
+
+      function updateProgress() {
+        const total = state.events.length || 3;
+        const solved = state.events.filter((event) => event.solved).length;
+        progressCount.textContent = `${solved} / ${total}`;
+        progressFill.style.width = `${(solved / total) * 100}%`;
+        progressTrack.setAttribute('aria-valuenow', String(solved));
+        if (solved === total) {
+          progressHint.textContent = '这一阶段都预演完了，可以翻下一个阶段了。';
+        } else if (solved === 0) {
+          progressHint.textContent = '点开应对卡，再按下「我准备好了」。';
+        } else {
+          progressHint.textContent = '继续把剩下的状况也在脑子里过一遍。';
+        }
+      }
+
+      function simulate(destination, options = {}) {
+        state.destination = destination;
+        if (!state.typeOverride) state.travelType = inferTravelType(destination);
+        setTravelTypeUI(state.travelType, !state.typeOverride);
+        state.stages = stageChecks(state.travelType);
+        state.checked = loadChecked(destination, state.travelType);
+        state.activeStage = 0;
+        state.currentEventStage = -1;
+        state.recentEventIds = [];
+        state.events = pickStageEvents(0);
+        state.generated = true;
+
+        renderJourney();
+        renderPhases();
+        renderEvents();
+
+        startLabel.textContent = '重新预演';
+        rerollBtn.disabled = false;
+
+        if (!options.preserveScroll) {
+          const target = journeySummary;
+          const rect = target.getBoundingClientRect();
+          const shouldScroll = window.innerWidth < 800 || rect.top > window.innerHeight * 0.55;
+          if (shouldScroll) {
+            window.setTimeout(() => {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+          }
+        }
+      }
+
+      function submitDestination(value) {
+        const destination = value.trim().replace(/\s+/g, ' ');
+        if (!destination) {
+          destinationInput.focus();
+          form.classList.remove('shake');
+          void form.offsetWidth;
+          form.classList.add('shake');
+          showToast('先告诉我，你想去哪里呀');
+          return;
+        }
+        destinationInput.value = destination;
+        simulate(destination);
+        showToast('全流程预演已经展开，点开左侧阶段逐项过一遍');
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2400);
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitDestination(destinationInput.value);
+      });
+
+      randomDestBtn.addEventListener('click', () => {
+        const choices = DESTINATIONS.filter((name) => name !== destinationInput.value.trim());
+        const picked = choices[Math.floor(Math.random() * choices.length)];
+        destinationInput.value = picked;
+        simulate(picked);
+        showToast(`骰子说：去${picked}，按全流程走一遍`);
+      });
+
+      $$('.dest-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const destination = chip.dataset.dest;
+          destinationInput.value = destination;
+          simulate(destination);
+          showToast(`去${destination}，先把 8 个阶段预演一遍`);
+        });
+      });
+
+      travelTypeGroup.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-type]');
+        if (!button) return;
+        state.typeOverride = true;
+        state.travelType = button.dataset.type;
+        setTravelTypeUI(state.travelType, false);
+        if (state.destination) {
+          simulate(state.destination, { preserveScroll: true });
+          showToast(`已切换为${state.travelType === 'abroad' ? '出境游' : '境内游'}模式`);
+        }
+      });
+
+      phaseList.addEventListener('click', (event) => {
+        const simulateButton = event.target.closest('[data-simulate]');
+        if (simulateButton) {
+          const index = Number(simulateButton.dataset.simulate);
+          openStage(index);
+          state.events = pickStageEvents(index);
+          renderEvents();
+          if (window.innerWidth < 800) {
+            window.setTimeout(() => {
+              $('.event-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          }
+          showToast('这一阶段的冷门状况换好了');
+          return;
+        }
+
+        const toggle = event.target.closest('.phase-toggle');
+        if (!toggle) return;
+        const card = toggle.closest('.phase-card');
+        const index = Number(card.dataset.phase);
+        if (card.classList.contains('is-open') && state.activeStage === index) {
+          card.classList.remove('is-open');
+          toggle.setAttribute('aria-expanded', 'false');
+        } else {
+          openStage(index);
+        }
+      });
+
+      phaseList.addEventListener('change', (event) => {
+        const checkbox = event.target.closest('input[data-check-stage]');
+        if (!checkbox) return;
+        const stageIndex = Number(checkbox.dataset.checkStage);
+        const checkIndex = Number(checkbox.dataset.checkIndex);
+        const stage = state.stages[stageIndex];
+        if (!stage) return;
+        const key = checkKey(stage, checkIndex);
+        if (checkbox.checked) {
+          state.checked[key] = true;
+        } else {
+          delete state.checked[key];
+        }
+        persistChecked();
+        updateStageCount(stageIndex);
+      });
+
+      rerollBtn.addEventListener('click', () => {
+        if (!state.destination) return;
+        rerollBtn.classList.remove('is-spinning');
+        void rerollBtn.offsetWidth;
+        rerollBtn.classList.add('is-spinning');
+        state.events = pickStageEvents(state.activeStage);
+        renderEvents();
+        window.setTimeout(() => rerollBtn.classList.remove('is-spinning'), 500);
+        showToast('换一批同阶段的冷门状况');
+      });
+
+      eventList.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const index = Number(button.dataset.index);
+        const current = state.events[index];
+        if (!current) return;
+        const stage = state.stages[state.activeStage];
+
+        if (button.dataset.action === 'solve') {
+          current.solved = !current.solved;
+          const card = button.closest('.event-card');
+          if (card) card.classList.toggle('is-solved', current.solved);
+          button.classList.toggle('is-solved', current.solved);
+          button.setAttribute('aria-pressed', String(current.solved));
+          button.innerHTML = `<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>${current.solved ? '已准备好' : '我准备好了'}`;
+          updateProgress();
+          if (state.events.every((item) => item.solved)) {
+            showToast('这一阶段的状况都想明白了，继续翻下一个阶段吧');
+          }
+          return;
+        }
+
+        if (button.dataset.action === 'note') {
+          const heading = `【${stage ? stage.title : '旅途'} · ${current.title.replaceAll('{dest}', state.destination)}】`;
+          insertNote(`${heading}\n${current.takeaway}`);
+          showToast('已把这条应对要点抄进笔记');
+        }
+      });
+
+      function loadShopping() {
+        try {
+          const saved = JSON.parse(window.localStorage.getItem(SHOPPING_KEY) || '[]');
+          if (Array.isArray(saved)) {
+            shopping = saved
+              .filter((item) => item && typeof item.text === 'string')
+              .map((item) => ({ id: String(item.id || Date.now()), text: item.text, bought: Boolean(item.bought) }));
+          }
+        } catch (error) {
+          shopping = [];
+        }
+      }
+
+      function saveShopping() {
+        try {
+          window.localStorage.setItem(SHOPPING_KEY, JSON.stringify(shopping));
+        } catch (error) {
+          // Keep the in-memory list usable even if storage is blocked.
+        }
+      }
+
+      function renderShopping() {
+        const total = shopping.length;
+        const bought = shopping.filter((item) => item.bought).length;
+        shoppingCount.textContent = `${bought} / ${total}`;
+        shoppingSummary.textContent = total ? `已买 ${bought} / ${total}` : '还没添加物品';
+        shoppingEmpty.hidden = total > 0;
+        shoppingList.hidden = total === 0;
+        clearBoughtBtn.disabled = bought === 0;
+        shoppingList.innerHTML = shopping.map((item) => `
+          <li class="shopping-item${item.bought ? ' is-bought' : ''}">
+            <input class="shopping-check" type="checkbox" data-buy-check="${escapeHTML(item.id)}" ${item.bought ? 'checked' : ''} aria-label="标记 ${escapeHTML(item.text)} 已买">
+            <span class="shopping-text">${escapeHTML(item.text)}</span>
+            <button class="shopping-del" type="button" data-buy-del="${escapeHTML(item.id)}" aria-label="删除 ${escapeHTML(item.text)}">×</button>
+          </li>
+        `).join('');
+      }
+
+      function addShoppingItem(rawText) {
+        const text = rawText.trim().replace(/\s+/g, ' ');
+        if (!text) {
+          shoppingInput.focus();
+          showToast('先写一个要买的东西吧');
+          return;
+        }
+        const duplicate = shopping.some((item) => item.text.toLowerCase() === text.toLowerCase());
+        if (duplicate) {
+          showToast('这个已经在待买小卡里啦');
+          shoppingInput.select();
+          return;
+        }
+        shopping.push({
+          id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+          text,
+          bought: false
+        });
+        saveShopping();
+        renderShopping();
+        shoppingInput.value = '';
+        shoppingInput.focus();
+        showToast('已放进待买小卡');
+      }
+
+      shoppingForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        addShoppingItem(shoppingInput.value);
+      });
+
+      $$('.shopping-suggestion').forEach((button) => {
+        button.addEventListener('click', () => addShoppingItem(button.dataset.buy));
+      });
+
+      shoppingList.addEventListener('change', (event) => {
+        const checkbox = event.target.closest('[data-buy-check]');
+        if (!checkbox) return;
+        const item = shopping.find((entry) => entry.id === checkbox.dataset.buyCheck);
+        if (!item) return;
+        item.bought = checkbox.checked;
+        saveShopping();
+        renderShopping();
+        showToast(checkbox.checked ? '已标记为买到了' : '已放回待买状态');
+      });
+
+      shoppingList.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-buy-del]');
+        if (!button) return;
+        shopping = shopping.filter((entry) => entry.id !== button.dataset.buyDel);
+        saveShopping();
+        renderShopping();
+        showToast('已从待买小卡中删除');
+      });
+
+      clearBoughtBtn.addEventListener('click', () => {
+        const before = shopping.length;
+        shopping = shopping.filter((item) => !item.bought);
+        if (shopping.length === before) {
+          showToast('还没有已买的东西');
+          return;
+        }
+        saveShopping();
+        renderShopping();
+        showToast('已清掉买到的物品');
+      });
+
+      function isShoppingFloating() {
+        return shoppingCard.classList.contains('is-floating');
+      }
+
+      function clampNumber(value, min, max) {
+        return Math.min(Math.max(value, min), Math.max(min, max));
+      }
+
+      function setShoppingModeUI(floating) {
+        shoppingModeLabel.textContent = floating ? '归位' : '浮动';
+        shoppingModeBtn.setAttribute('aria-label', floating ? '将待买小卡收回原位' : '让小卡浮动，随时记录');
+        shoppingModeBtn.title = floating ? '将小卡收回原位' : '让小卡浮动，随时记录';
+        const iconUse = shoppingModeBtn.querySelector('use');
+        if (iconUse) iconUse.setAttribute('href', floating ? '#i-pin' : '#i-grip');
+      }
+
+      function positionFloatingShopping(left, top) {
+        if (!isShoppingFloating()) return;
+        const margin = 8;
+        const width = shoppingCard.offsetWidth;
+        const height = shoppingCard.offsetHeight;
+        const maxLeft = window.innerWidth - width - margin;
+        const maxTop = window.innerHeight - height - margin;
+        shoppingCard.style.left = `${clampNumber(left, margin, maxLeft)}px`;
+        shoppingCard.style.top = `${clampNumber(top, margin, maxTop)}px`;
+      }
+
+      function saveShoppingPosition() {
+        try {
+          if (!isShoppingFloating()) {
+            window.localStorage.setItem(SHOPPING_POS_KEY, JSON.stringify({ floating: false }));
+            return;
+          }
+          window.localStorage.setItem(SHOPPING_POS_KEY, JSON.stringify({
+            floating: true,
+            left: parseFloat(shoppingCard.style.left) || 0,
+            top: parseFloat(shoppingCard.style.top) || 0,
+            width: shoppingCard.offsetWidth
+          }));
+        } catch (error) {
+          // Dragging still works for this page session if storage is unavailable.
+        }
+      }
+
+      function floatShoppingCard(options = {}) {
+        if (isShoppingFloating()) return;
+        const rect = shoppingCard.getBoundingClientRect();
+        const floatWidth = Math.min(options.width || rect.width || 330, 360, window.innerWidth - 16);
+        const slotHeight = Math.max(180, rect.height);
+
+        shoppingSlot.style.minHeight = `${slotHeight}px`;
+        shoppingSlotHint.hidden = false;
+        shoppingSlotHint.style.minHeight = `${slotHeight}px`;
+
+        shoppingCard.style.width = `${Math.max(240, floatWidth)}px`;
+        shoppingCard.style.left = `${rect.left}px`;
+        shoppingCard.style.top = `${rect.top}px`;
+        shoppingCard.classList.add('is-floating');
+        setShoppingModeUI(true);
+        positionFloatingShopping(options.left ?? rect.left, options.top ?? rect.top);
+        const floatingHeight = Math.max(180, shoppingCard.offsetHeight);
+        shoppingSlot.style.minHeight = `${floatingHeight}px`;
+        shoppingSlotHint.style.minHeight = `${floatingHeight}px`;
+        if (options.persist !== false) saveShoppingPosition();
+      }
+
+      function dockShoppingCard(options = {}) {
+        if (!isShoppingFloating()) return;
+        shoppingCard.classList.remove('is-floating', 'is-dragging');
+        shoppingCard.style.removeProperty('left');
+        shoppingCard.style.removeProperty('top');
+        shoppingCard.style.removeProperty('width');
+        shoppingSlot.style.removeProperty('min-height');
+        shoppingSlotHint.hidden = true;
+        shoppingSlotHint.style.removeProperty('min-height');
+        setShoppingModeUI(false);
+        saveShoppingPosition();
+        if (options.scrollIntoView) {
+          window.setTimeout(() => {
+            shoppingSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 80);
+        }
+      }
+
+      function restoreShoppingPosition() {
+        try {
+          const saved = JSON.parse(window.localStorage.getItem(SHOPPING_POS_KEY) || '{}');
+          if (!saved.floating) return;
+          const rect = shoppingCard.getBoundingClientRect();
+          floatShoppingCard({
+            left: Number(saved.left) || rect.left,
+            top: Number(saved.top) || rect.top,
+            width: Number(saved.width) || rect.width,
+            persist: false
+          });
+        } catch (error) {
+          // Ignore malformed saved positions.
+        }
+      }
+
+      shoppingModeBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (isShoppingFloating()) {
+          dockShoppingCard({ scrollIntoView: true });
+          showToast('待买小卡已归位');
+        } else {
+          floatShoppingCard();
+          showToast('小卡已浮动，按住标题可以拖动');
+        }
+      });
+
+      shoppingDockLink.addEventListener('click', () => {
+        dockShoppingCard({ scrollIntoView: true });
+        showToast('待买小卡已归位');
+      });
+
+      shoppingHandle.addEventListener('dblclick', (event) => {
+        if (event.target.closest('button, input, a, textarea, select')) return;
+        if (isShoppingFloating()) {
+          dockShoppingCard({ scrollIntoView: true });
+        } else {
+          floatShoppingCard();
+        }
+      });
+
+      shoppingHandle.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+        if (event.target.closest('button, input, a, textarea, select')) return;
+        const rect = shoppingCard.getBoundingClientRect();
+        shoppingDrag = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          originLeft: rect.left,
+          originTop: rect.top,
+          active: isShoppingFloating()
+        };
+        if (shoppingDrag.active) shoppingCard.classList.add('is-dragging');
+        try {
+          shoppingHandle.setPointerCapture(event.pointerId);
+        } catch (error) {
+          // Pointer capture may not be available in older browsers.
+        }
+        event.preventDefault();
+      });
+
+      shoppingHandle.addEventListener('pointermove', (event) => {
+        if (!shoppingDrag || event.pointerId !== shoppingDrag.pointerId) return;
+        const dx = event.clientX - shoppingDrag.startX;
+        const dy = event.clientY - shoppingDrag.startY;
+        if (!shoppingDrag.active) {
+          if (Math.hypot(dx, dy) < 5) return;
+          floatShoppingCard();
+          shoppingDrag.active = true;
+          shoppingCard.classList.add('is-dragging');
+        }
+        positionFloatingShopping(shoppingDrag.originLeft + dx, shoppingDrag.originTop + dy);
+      });
+
+      function finishShoppingDrag(event) {
+        if (!shoppingDrag || event.pointerId !== shoppingDrag.pointerId) return;
+        const wasActive = shoppingDrag.active;
+        try {
+          shoppingHandle.releasePointerCapture(shoppingDrag.pointerId);
+        } catch (error) {
+          // The pointer may already have been released.
+        }
+        shoppingDrag = null;
+        shoppingCard.classList.remove('is-dragging');
+        if (wasActive) {
+          positionFloatingShopping(
+            parseFloat(shoppingCard.style.left) || 0,
+            parseFloat(shoppingCard.style.top) || 0
+          );
+          saveShoppingPosition();
+        }
+      }
+
+      shoppingHandle.addEventListener('pointerup', finishShoppingDrag);
+      shoppingHandle.addEventListener('pointercancel', finishShoppingDrag);
+
+      window.addEventListener('resize', () => {
+        if (!isShoppingFloating()) return;
+        window.clearTimeout(shoppingResizeTimer);
+        shoppingResizeTimer = window.setTimeout(() => {
+          const left = parseFloat(shoppingCard.style.left) || 0;
+          const top = parseFloat(shoppingCard.style.top) || 0;
+          shoppingCard.style.width = `${Math.min(parseFloat(shoppingCard.style.width) || 340, window.innerWidth - 16, 360)}px`;
+          positionFloatingShopping(left, top);
+          saveShoppingPosition();
+        }, 100);
+      });
+
+      loadShopping();
+      renderShopping();
+      window.setTimeout(restoreShoppingPosition, 120);
+
+      function updateCharCount() {
+        const length = notes.value.length;
+        charCount.textContent = `${length} 字`;
+      }
+
+      function setSaveStatus(message, stateName = 'saved') {
+        saveText.textContent = message;
+        saveStatus.dataset.state = stateName;
+      }
+
+      function saveNotes() {
+        try {
+          window.localStorage.setItem(NOTES_KEY, notes.value);
+          const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+          setSaveStatus(`已保存在本机 · ${now}`, 'saved');
+        } catch (error) {
+          setSaveStatus('保存失败，请及时导出笔记', 'error');
+        }
+      }
+
+      function scheduleSave() {
+        window.clearTimeout(saveTimer);
+        setSaveStatus('正在保存…', 'saving');
+        saveTimer = window.setTimeout(saveNotes, 380);
+      }
+
+      function insertNote(block) {
+        const current = notes.value;
+        const gap = current.length === 0 ? '' : (current.endsWith('\n\n') ? '' : (current.endsWith('\n') ? '\n' : '\n\n'));
+        notes.value = `${current}${gap}${block}\n`;
+        notes.selectionStart = notes.selectionEnd = notes.value.length;
+        notes.focus();
+        updateCharCount();
+        scheduleSave();
+        noteSheet.classList.remove('is-flash');
+        void noteSheet.offsetWidth;
+        noteSheet.classList.add('is-flash');
+      }
+
+      notes.addEventListener('input', () => {
+        updateCharCount();
+        scheduleSave();
+        if (clearArmed) resetClearButton();
+      });
+
+      notes.addEventListener('blur', () => {
+        if (saveTimer) {
+          window.clearTimeout(saveTimer);
+          saveTimer = null;
+          saveNotes();
+        }
+      });
+
+      $$('.note-tag').forEach((tag) => {
+        tag.addEventListener('click', () => {
+          insertNote(`【${tag.dataset.tag}】${tag.dataset.content}`);
+          showToast(`已插入「${tag.dataset.tag}」小提示`);
+        });
+      });
+
+      function resetClearButton() {
+        clearArmed = false;
+        clearLabel.textContent = '清空';
+        clearBtn.classList.remove('is-armed');
+        window.clearTimeout(clearTimer);
+      }
+
+      clearBtn.addEventListener('click', () => {
+        if (!notes.value) {
+          showToast('笔记已经是空的啦');
+          return;
+        }
+        if (!clearArmed) {
+          clearArmed = true;
+          clearLabel.textContent = '再点一次';
+          clearBtn.classList.add('is-armed');
+          showToast('再点一次，就会清空全部笔记');
+          window.clearTimeout(clearTimer);
+          clearTimer = window.setTimeout(resetClearButton, 3200);
+          return;
+        }
+        notes.value = '';
+        resetClearButton();
+        updateCharCount();
+        saveNotes();
+        notes.focus();
+        showToast('笔记已经清空，重新开始吧');
+      });
+
+      function exportNotes() {
+        if (!notes.value.trim()) {
+          showToast('先写点什么，再导出吧');
+          return;
+        }
+        const today = new Date();
+        const date = [
+          today.getFullYear(),
+          String(today.getMonth() + 1).padStart(2, '0'),
+          String(today.getDate()).padStart(2, '0')
+        ].join('-');
+        const content = `旅游模拟器desuwa · 旅途笔记\n${date}\n\n${notes.value}\n`;
+        const blob = new Blob(['\uFEFF', content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `旅游笔记-${date}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('笔记已经导出成 txt 啦');
+      }
+
+      $('#exportBtn').addEventListener('click', exportNotes);
+
+      function initNotes() {
+        try {
+          const saved = window.localStorage.getItem(NOTES_KEY);
+          if (saved) {
+            notes.value = saved;
+            setSaveStatus('上次的笔记已经找回来啦', 'saved');
+          }
+        } catch (error) {
+          setSaveStatus('无法读取本机存储，请手动导出', 'error');
+        }
+        updateCharCount();
+      }
+
+      initNotes();
+    })();
+  </script>
+</body>
+</html>
