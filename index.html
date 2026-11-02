@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fdf6e9">
-  <title>旅游模拟器desuwa v1.1 · 从订票到回家，全流程预演</title>
-  <meta name="description" content="第一视角旅游全流程模拟器：从几个月前买票订房、打包出发，到转机、入境、当地生活与返程退税，用细致到尴尬的检查清单和冷门突发状况，帮你把真实旅程先走一遍。">
+  <title>旅游模拟器desuwa v1.2 · 从订票到回家，全流程预演</title>
+  <meta name="description" content="第一视角旅游全流程模拟器：从几个月前买票订房、打包出发，到转机、入境、当地生活与返程退税，用细致到尴尬的检查清单和冷门突发状况，帮你把真实旅程先走一遍；还能和朋友一起编辑共享备忘录。">
   <style>
     :root {
       --ink: #483631;
@@ -3127,6 +3127,355 @@
       .shopping-text { font-size: 10px; }
     }
 
+    /* ---------- Shared memo ---------- */
+    .section-number--shared { background: var(--sky); }
+
+    .shared-section { margin-top: 40px; scroll-margin-top: 16px; }
+
+    .shared-paper {
+      position: relative;
+      overflow: hidden;
+      padding: 23px 24px 18px;
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      background: #f8fcfe;
+      box-shadow: var(--shadow);
+    }
+
+    .shared-paper::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(72, 54, 49, 0.08) 1px, transparent 0);
+      background-size: 19px 19px;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .shared-paper::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -105px;
+      top: -125px;
+      border-radius: 50%;
+      background: var(--sky);
+      opacity: 0.24;
+      pointer-events: none;
+    }
+
+    .shared-tape {
+      position: absolute;
+      z-index: 2;
+      top: -10px;
+      left: 50%;
+      width: 108px;
+      height: 21px;
+      background: rgba(169, 215, 231, 0.78);
+      border-left: 1px dashed rgba(72, 54, 49, 0.22);
+      border-right: 1px dashed rgba(72, 54, 49, 0.22);
+      transform: translateX(-50%) rotate(-1.5deg);
+    }
+
+    .shared-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .shared-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .shared-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid var(--ink);
+      border-radius: 12px;
+      background: var(--sky);
+      box-shadow: 2px 2px 0 rgba(72, 54, 49, 0.13);
+      transform: rotate(-3deg);
+    }
+
+    .shared-icon .icon { font-size: 21px; }
+
+    .shared-kicker {
+      display: block;
+      margin-bottom: 2px;
+      color: #3f7284;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+    }
+
+    .shared-head h3 {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0;
+      font-family: var(--display);
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .shared-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border: 1px solid rgba(72, 54, 49, 0.28);
+      border-radius: 999px;
+      background: var(--butter);
+      color: var(--ink-soft);
+      font-family: var(--body);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .shared-status[data-state="online"] { background: var(--mint); color: #285a47; }
+    .shared-status[data-state="saving"], .shared-status[data-state="editing"] { background: var(--butter); color: #705517; }
+    .shared-status[data-state="error"], .shared-status[data-state="offline"] { background: #ffd9d2; color: #8b392c; }
+    .shared-status[data-state="remote"] { background: var(--lilac); color: #58437e; }
+
+    .shared-tools {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: none;
+    }
+
+    .shared-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 29px;
+      padding: 5px 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.36);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .shared-tool-btn .icon { font-size: 13px; }
+    .shared-tool-btn:hover { border-color: var(--ink); background: var(--butter); color: var(--ink); transform: translateY(-1px); }
+
+    .shared-desc {
+      position: relative;
+      z-index: 1;
+      max-width: 72em;
+      margin: 9px 0 11px;
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .shared-desc strong {
+      color: var(--ink);
+      border-bottom: 2px solid var(--butter);
+    }
+
+    .shared-remote-banner {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 9px;
+      padding: 8px 11px;
+      border: 1px solid #d1bfe9;
+      border-radius: 9px;
+      background: #f3ecfc;
+      color: #624a8b;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .shared-remote-banner button {
+      flex: none;
+      padding: 3px 8px;
+      border: 1px solid rgba(88, 67, 126, 0.4);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: #58437e;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .shared-remote-banner button:hover { background: var(--lilac); }
+
+    .shared-editor-shell {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border: 1.5px solid var(--ink);
+      border-radius: 14px;
+      background: #fffdf8;
+      box-shadow: 3px 3px 0 rgba(72, 54, 49, 0.09);
+    }
+
+    #sharedMemo {
+      display: block;
+      width: 100%;
+      min-height: 266px;
+      resize: vertical;
+      padding: 16px 19px;
+      border: 0;
+      outline: 0;
+      background-color: #fffdf8;
+      background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(169, 215, 231, 0.35) 31px, rgba(169, 215, 231, 0.35) 32px);
+      background-position: 0 16px;
+      color: var(--ink);
+      font-family: var(--hand);
+      font-size: 18px;
+      line-height: 32px;
+      letter-spacing: 0.015em;
+      caret-color: var(--peach-deep);
+    }
+
+    #sharedMemo::placeholder { color: #a99589; opacity: 1; }
+    #sharedMemo:focus-visible { outline: 3px solid var(--sky); outline-offset: -5px; }
+    #sharedMemo:disabled { color: var(--ink-faint); background-color: #f7f8f6; }
+
+    .shared-cover {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 26px;
+      background: rgba(255, 253, 248, 0.94);
+      text-align: center;
+    }
+
+    .shared-cover .cover-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 2px;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      background: var(--sky);
+      font-size: 20px;
+    }
+
+    .shared-cover h4 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .shared-cover p {
+      max-width: 30em;
+      margin: 0;
+      color: var(--ink-faint);
+      font-size: 11.5px;
+      line-height: 1.7;
+    }
+
+    .shared-retry-btn {
+      margin-top: 5px;
+      padding: 5px 12px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      background: var(--butter);
+      color: var(--ink);
+      font-size: 10.5px;
+      font-weight: 800;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .shared-retry-btn:hover { background: var(--peach); transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+
+    .shared-foot {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 7px 14px;
+      padding-top: 9px;
+      color: var(--ink-faint);
+      font-size: 10.5px;
+      line-height: 1.5;
+    }
+
+    .shared-sync {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+    }
+
+    .shared-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--butter);
+      box-shadow: 0 0 0 3px rgba(255, 215, 108, 0.18);
+    }
+
+    .shared-sync[data-state="online"] .shared-dot { background: #69b394; box-shadow: 0 0 0 3px rgba(105, 179, 148, 0.18); }
+    .shared-sync[data-state="saving"] .shared-dot,
+    .shared-sync[data-state="editing"] .shared-dot { background: var(--peach); animation: blink 0.8s ease infinite; }
+    .shared-sync[data-state="error"] .shared-dot,
+    .shared-sync[data-state="offline"] .shared-dot { background: var(--peach-deep); }
+    .shared-sync[data-state="remote"] .shared-dot { background: #9a83c5; }
+
+    .shared-foot .shared-saved-at { color: var(--ink-faint); }
+    .shared-foot .shared-char { color: var(--ink-faint); }
+
+    @media (max-width: 720px) {
+      .shared-section { margin-top: 31px; }
+      .shared-paper { padding: 18px 13px 14px; border-radius: 20px; }
+      .shared-tape { width: 86px; height: 19px; }
+      .shared-head { flex-direction: column; gap: 9px; }
+      .shared-heading { gap: 8px; }
+      .shared-icon { width: 36px; height: 36px; border-radius: 10px; }
+      .shared-icon .icon { font-size: 18px; }
+      .shared-kicker { font-size: 8px; }
+      .shared-head h3 { font-size: 20px; }
+      .shared-status { font-size: 8.5px; }
+      .shared-tools { width: 100%; }
+      .shared-tool-btn { flex: 1; min-height: 31px; font-size: 10.5px; }
+      .shared-desc { margin: 8px 0 9px; font-size: 11.5px; }
+      .shared-remote-banner { align-items: flex-start; flex-direction: column; gap: 6px; font-size: 10.5px; }
+      .shared-remote-banner button { align-self: flex-start; }
+      #sharedMemo { min-height: 228px; padding: 12px 13px; font-size: 17px; line-height: 31px; background-position: 0 12px; }
+      .shared-cover { padding: 18px; }
+      .shared-cover h4 { font-size: 15.5px; }
+      .shared-cover p { font-size: 11px; }
+      .shared-foot { font-size: 9.5px; }
+    }
+
     /* ---------- Readability pass: larger type, same playful proportions ---------- */
     body { font-size: 16px; }
     .eyebrow { font-size: 10.5px; }
@@ -3298,6 +3647,12 @@
     <symbol id="i-pin" viewBox="0 0 24 24">
       <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
       <circle cx="12" cy="10" r="2.5"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24">
+      <circle cx="6" cy="12" r="2.4"/>
+      <circle cx="18" cy="5.5" r="2.4"/>
+      <circle cx="18" cy="18.5" r="2.4"/>
+      <path d="m8.3 10.9 7.5-4.1M8.3 13.1l7.5 4.1"/>
     </symbol>
     <symbol id="i-grip" viewBox="0 0 24 24">
       <circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none"/>
@@ -3789,9 +4144,79 @@
       </div>
     </section>
 
+    <section class="shared-section" id="shared-memo" aria-labelledby="sharedTitle">
+      <div class="section-head">
+        <div class="section-title-row">
+          <span class="section-number section-number--shared" aria-hidden="true">04</span>
+          <div>
+            <span class="section-kicker">Plan together, write together</span>
+            <h2>和朋友一起写的共享备忘录</h2>
+          </div>
+        </div>
+        <p class="section-note"><span class="scribble">打开同一个链接的人，都能一起改。</span></p>
+      </div>
+
+      <div class="shared-paper">
+        <span class="shared-tape" aria-hidden="true"></span>
+        <div class="shared-head">
+          <div class="shared-heading">
+            <span class="shared-icon" aria-hidden="true"><svg class="icon"><use href="#i-users"/></svg></span>
+            <div>
+              <span class="shared-kicker">SHARED MEMO · AUTO SYNC</span>
+              <h3 id="sharedTitle">旅伴共享便签 <span class="shared-status" id="sharedStatus" data-state="connecting" aria-live="polite">连接中…</span></h3>
+            </div>
+          </div>
+          <div class="shared-tools">
+            <button class="shared-tool-btn" id="sharedCopyBtn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>
+              复制分享链接
+            </button>
+            <button class="shared-tool-btn" id="sharedRefreshBtn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+              同步
+            </button>
+          </div>
+        </div>
+
+        <p class="shared-desc">
+          打开这个页面的朋友会看到同一张便签，修改会自动保存，约 3 秒同步一次。
+          <strong>不要写证件号、密码等敏感信息</strong>；多人同时编辑时，以最后一次保存为准。
+        </p>
+
+        <div class="shared-remote-banner" id="sharedRemoteBanner" role="status" aria-live="polite" hidden>
+          <span>朋友刚刚更新了内容。载入会覆盖你还没保存的修改。</span>
+          <button id="sharedLoadRemote" type="button">载入新内容</button>
+        </div>
+
+        <div class="shared-editor-shell">
+          <label class="sr-only" for="sharedMemo">共享备忘录</label>
+          <textarea
+            id="sharedMemo"
+            disabled
+            placeholder="一起写点什么：&#10;· 出发前谁负责买什么&#10;· 集合时间、酒店地址、备用路线&#10;· 这趟旅行一定要一起做的事"
+          ></textarea>
+          <div class="shared-cover" id="sharedCover">
+            <span class="cover-icon" aria-hidden="true"><svg class="icon"><use href="#i-cloud"/></svg></span>
+            <h4 id="sharedCoverTitle">正在连接共享备忘录…</h4>
+            <p id="sharedCoverText">第一次连接可能需要几秒，请稍等。</p>
+            <button class="shared-retry-btn" id="sharedRetryBtn" type="button" hidden>重新连接</button>
+          </div>
+        </div>
+
+        <div class="shared-foot">
+          <span class="shared-sync" id="sharedSync" data-state="connecting">
+            <span class="shared-dot" aria-hidden="true"></span>
+            <span id="sharedStatusText">正在读取云端内容…</span>
+          </span>
+          <span class="shared-saved-at" id="sharedUpdated">自动同步 · 每 3 秒检查</span>
+          <span class="shared-char" id="sharedChar">0 字</span>
+        </div>
+      </div>
+    </section>
+
     <footer class="site-foot">
-      <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬<span class="site-version">v1.1</span></p>
-      <p>Made with <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg> for careful travelers · 所有内容只留在你的浏览器里</p>
+      <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬<span class="site-version">v1.2</span></p>
+      <p>Made with <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg> for careful travelers · 个人笔记留在浏览器，共享备忘录保存在云端</p>
     </footer>
   </div>
 
@@ -3805,6 +4230,10 @@
       const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
       const NOTES_KEY = 'travel-simulator-desuwa-notes-v1';
+      const SHARED_MEMO_URL = 'https://rlzmuzvmfkcjlwkeapjo.supabase.co/rest/v1/shared_memo';
+      const SHARED_MEMO_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsem11enZtZmtjamx3a2VhcGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1Njk3NjgsImV4cCI6MjEwOTE0NTc2OH0.fpQBWlSlXndtIDe3hKmilOpTB2LqOEyeeWc9O0RlX0I';
+      const SHARED_MEMO_POLL_MS = 3000;
+      const SHARED_MEMO_SAVE_DELAY = 700;
       const DESTINATIONS = ['京都', '巴黎', '大理', '冰岛', '重庆', '东京', '成都', '上海', '西安', '杭州', '厦门', '长沙', '青岛', '香港', '新加坡', '曼谷', '伦敦', '首尔'];
 
       const PACKS = [
@@ -4469,6 +4898,20 @@
       const shoppingModeLabel = $('#shoppingModeLabel');
       const shoppingSlotHint = $('#shoppingSlotHint');
       const shoppingDockLink = $('#shoppingDockLink');
+      const sharedMemo = $('#sharedMemo');
+      const sharedStatus = $('#sharedStatus');
+      const sharedSync = $('#sharedSync');
+      const sharedStatusText = $('#sharedStatusText');
+      const sharedUpdated = $('#sharedUpdated');
+      const sharedChar = $('#sharedChar');
+      const sharedCover = $('#sharedCover');
+      const sharedCoverTitle = $('#sharedCoverTitle');
+      const sharedCoverText = $('#sharedCoverText');
+      const sharedRetryBtn = $('#sharedRetryBtn');
+      const sharedCopyBtn = $('#sharedCopyBtn');
+      const sharedRefreshBtn = $('#sharedRefreshBtn');
+      const sharedRemoteBanner = $('#sharedRemoteBanner');
+      const sharedLoadRemote = $('#sharedLoadRemote');
       const notes = $('#notes');
       const charCount = $('#charCount');
       const saveStatus = $('#saveStatus');
@@ -4485,6 +4928,20 @@
       let shopping = [];
       let shoppingDrag = null;
       let shoppingResizeTimer = null;
+      const sharedMemoState = {
+        loaded: false,
+        loading: false,
+        saving: false,
+        dirty: false,
+        lastRemoteContent: '',
+        lastRemoteAt: '',
+        pendingRemoteContent: '',
+        pendingRemoteAt: '',
+        pollTimer: null,
+        saveTimer: null,
+        retryTimer: null,
+        initialized: false
+      };
 
       function escapeHTML(value) {
         return String(value)
@@ -5241,6 +5698,274 @@
       renderShopping();
       window.setTimeout(restoreShoppingPosition, 120);
 
+      function sharedMemoHeaders(includeJson = false) {
+        const headers = {
+          apikey: SHARED_MEMO_ANON_KEY,
+          Authorization: `Bearer ${SHARED_MEMO_ANON_KEY}`,
+          Accept: 'application/json'
+        };
+        if (includeJson) headers['Content-Type'] = 'application/json';
+        return headers;
+      }
+
+      function formatSharedTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      function updateSharedCharCount() {
+        sharedChar.textContent = `${sharedMemo.value.length} 字`;
+      }
+
+      function setSharedStatus(stateName, headerText, footText) {
+        sharedStatus.dataset.state = stateName;
+        sharedStatus.textContent = headerText;
+        sharedSync.dataset.state = stateName;
+        sharedStatusText.textContent = footText || headerText;
+      }
+
+      function showSharedCover(title, text, canRetry) {
+        sharedCover.hidden = false;
+        sharedCoverTitle.textContent = title;
+        sharedCoverText.textContent = text;
+        sharedRetryBtn.hidden = !canRetry;
+        sharedMemo.disabled = true;
+      }
+
+      function hideSharedCover() {
+        sharedCover.hidden = true;
+        sharedMemo.disabled = false;
+        sharedRetryBtn.hidden = true;
+      }
+
+      function showRemoteMemoBanner(content, updatedAt) {
+        sharedMemoState.pendingRemoteContent = content;
+        sharedMemoState.pendingRemoteAt = updatedAt;
+        sharedRemoteBanner.hidden = false;
+        setSharedStatus('remote', '有新内容', '朋友更新了内容，等你载入');
+      }
+
+      function applyRemoteMemo(content, updatedAt) {
+        sharedMemo.value = content;
+        sharedMemoState.lastRemoteContent = content;
+        sharedMemoState.lastRemoteAt = updatedAt;
+        sharedMemoState.dirty = false;
+        sharedRemoteBanner.hidden = true;
+        updateSharedCharCount();
+        setSharedStatus('online', '已同步', '已连接 · 每 3 秒检查');
+        const time = formatSharedTime(updatedAt);
+        sharedUpdated.textContent = time ? `云端更新 · ${time}` : '自动同步 · 每 3 秒检查';
+      }
+
+      async function fetchSharedMemo(options = {}) {
+        if (!SHARED_MEMO_URL || !SHARED_MEMO_ANON_KEY) {
+          showSharedCover('共享备忘录尚未配置', '需要 Supabase 项目地址和公开 anon key 才能连接。', false);
+          setSharedStatus('error', '未配置', '等待配置后端');
+          return;
+        }
+        if (sharedMemoState.loading) return;
+        sharedMemoState.loading = true;
+
+        if (!sharedMemoState.loaded) {
+          showSharedCover('正在连接共享备忘录…', '正在从云端读取你和朋友的内容。', false);
+          setSharedStatus('connecting', '连接中…', '正在读取云端内容…');
+        }
+
+        try {
+          const response = await fetch(`${SHARED_MEMO_URL}?id=eq.1&select=content,updated_at`, {
+            headers: sharedMemoHeaders(),
+            cache: 'no-store'
+          });
+          if (!response.ok) throw new Error(`Supabase HTTP ${response.status}`);
+          const rows = await response.json();
+          if (!Array.isArray(rows) || !rows.length) throw new Error('没有找到共享备忘录记录');
+          const memo = rows[0];
+          const content = typeof memo.content === 'string' ? memo.content : '';
+          const updatedAt = memo.updated_at || new Date().toISOString();
+
+          if (!sharedMemoState.loaded) {
+            sharedMemoState.loaded = true;
+            applyRemoteMemo(content, updatedAt);
+            hideSharedCover();
+            startSharedPolling();
+          } else if (content !== sharedMemoState.lastRemoteContent) {
+            if (sharedMemoState.dirty || document.activeElement === sharedMemo) {
+              showRemoteMemoBanner(content, updatedAt);
+            } else {
+              applyRemoteMemo(content, updatedAt);
+            }
+          } else {
+            sharedMemoState.lastRemoteAt = updatedAt;
+            if (!sharedMemoState.dirty && !sharedMemoState.saving) {
+              setSharedStatus('online', '已同步', '已连接 · 每 3 秒检查');
+              const time = formatSharedTime(updatedAt);
+              if (time) sharedUpdated.textContent = `云端更新 · ${time}`;
+            }
+          }
+          if (options.manual) showToast('已检查云端最新内容');
+        } catch (error) {
+          console.error('Shared memo fetch failed:', error);
+          if (!sharedMemoState.loaded) {
+            showSharedCover('共享备忘录暂时连不上', '请检查网络连接，或确认 Supabase 项目和 RLS 规则仍然正常。', true);
+            setSharedStatus('error', '连接失败', '无法读取云端内容');
+            sharedUpdated.textContent = '连接失败，可点「重新连接」';
+          } else {
+            setSharedStatus('error', '同步中断', '网络不稳，正在等待下次同步');
+            sharedUpdated.textContent = '本次同步失败，稍后自动重试';
+          }
+        } finally {
+          sharedMemoState.loading = false;
+        }
+      }
+
+      async function saveSharedMemo() {
+        if (!sharedMemoState.loaded || sharedMemoState.saving || !sharedMemoState.dirty) return;
+        window.clearTimeout(sharedMemoState.saveTimer);
+        sharedMemoState.saveTimer = null;
+        sharedMemoState.saving = true;
+        const value = sharedMemo.value;
+        setSharedStatus('saving', '保存中…', '正在保存到云端…');
+
+        try {
+          const response = await fetch(`${SHARED_MEMO_URL}?id=eq.1`, {
+            method: 'PATCH',
+            headers: {
+              ...sharedMemoHeaders(true),
+              Prefer: 'return=representation'
+            },
+            body: JSON.stringify({
+              content: value,
+              updated_at: new Date().toISOString()
+            })
+          });
+          if (!response.ok) throw new Error(`Supabase HTTP ${response.status}`);
+          const rows = await response.json();
+          if (!Array.isArray(rows) || !rows.length) throw new Error('没有找到要更新的共享备忘录');
+          const saved = rows[0];
+          const savedAt = saved.updated_at || new Date().toISOString();
+          sharedMemoState.lastRemoteAt = savedAt;
+          sharedMemoState.lastRemoteContent = value;
+
+          if (sharedMemo.value === value) {
+            sharedMemoState.dirty = false;
+            setSharedStatus('online', '已同步', '已连接 · 每 3 秒检查');
+            const time = formatSharedTime(savedAt);
+            sharedUpdated.textContent = time ? `已保存 · ${time}` : '已保存到云端';
+          } else {
+            scheduleSharedSave();
+          }
+        } catch (error) {
+          console.error('Shared memo save failed:', error);
+          setSharedStatus('error', '保存失败', '网络不稳，稍后自动重试');
+          sharedUpdated.textContent = '保存失败，正在等待重试';
+          window.clearTimeout(sharedMemoState.retryTimer);
+          sharedMemoState.retryTimer = window.setTimeout(() => {
+            if (sharedMemoState.dirty && !document.hidden) saveSharedMemo();
+          }, 5000);
+        } finally {
+          sharedMemoState.saving = false;
+        }
+      }
+
+      function scheduleSharedSave() {
+        if (!sharedMemoState.loaded) return;
+        sharedMemoState.dirty = true;
+        setSharedStatus('editing', '未保存', '编辑中，马上保存…');
+        sharedUpdated.textContent = '编辑中 · 停笔后自动保存';
+        window.clearTimeout(sharedMemoState.saveTimer);
+        sharedMemoState.saveTimer = window.setTimeout(saveSharedMemo, SHARED_MEMO_SAVE_DELAY);
+      }
+
+      function startSharedPolling() {
+        if (sharedMemoState.pollTimer) return;
+        sharedMemoState.pollTimer = window.setInterval(() => {
+          if (document.hidden || sharedMemoState.loading || sharedMemoState.saving) return;
+          fetchSharedMemo();
+        }, SHARED_MEMO_POLL_MS);
+      }
+
+      async function copySharedMemoLink() {
+        const url = `${window.location.origin}${window.location.pathname}#shared-memo`;
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const helper = document.createElement('textarea');
+            helper.value = url;
+            helper.style.position = 'fixed';
+            helper.style.opacity = '0';
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand('copy');
+            helper.remove();
+          }
+          showToast('共享链接已复制，发给朋友吧');
+        } catch (error) {
+          window.prompt('复制这个共享链接发给朋友：', url);
+        }
+      }
+
+      function loadPendingRemoteMemo() {
+        if (!sharedMemoState.pendingRemoteContent) return;
+        if (sharedMemoState.dirty && !window.confirm('载入朋友的新内容会覆盖你还没保存的修改，继续吗？')) return;
+        applyRemoteMemo(sharedMemoState.pendingRemoteContent, sharedMemoState.pendingRemoteAt);
+        sharedMemoState.pendingRemoteContent = '';
+        sharedMemoState.pendingRemoteAt = '';
+        showToast('已载入朋友的最新内容');
+      }
+
+      sharedMemo.addEventListener('input', () => {
+        updateSharedCharCount();
+        scheduleSharedSave();
+      });
+
+      sharedMemo.addEventListener('blur', () => {
+        if (sharedMemoState.dirty) saveSharedMemo();
+      });
+
+      sharedCopyBtn.addEventListener('click', copySharedMemoLink);
+      sharedRefreshBtn.addEventListener('click', () => fetchSharedMemo({ manual: true }));
+      sharedRetryBtn.addEventListener('click', () => fetchSharedMemo({ manual: true }));
+      sharedLoadRemote.addEventListener('click', loadPendingRemoteMemo);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (sharedMemoState.dirty) saveSharedMemo();
+        } else if (sharedMemoState.loaded) {
+          fetchSharedMemo();
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        if (!sharedMemoState.loaded || !sharedMemoState.dirty) return;
+        fetch(`${SHARED_MEMO_URL}?id=eq.1`, {
+          method: 'PATCH',
+          headers: {
+            ...sharedMemoHeaders(true),
+            Prefer: 'return=representation'
+          },
+          body: JSON.stringify({
+            content: sharedMemo.value,
+            updated_at: new Date().toISOString()
+          }),
+          keepalive: true
+        });
+      });
+
+      function initSharedMemo() {
+        if (!sharedMemo) return;
+        updateSharedCharCount();
+        if (!SHARED_MEMO_URL || !SHARED_MEMO_ANON_KEY) {
+          showSharedCover('共享备忘录尚未配置', '需要 Supabase 项目地址和公开 anon key 才能连接。', false);
+          setSharedStatus('error', '未配置', '等待配置后端');
+          return;
+        }
+        if (sharedMemoState.initialized) return;
+        sharedMemoState.initialized = true;
+        fetchSharedMemo();
+      }
+
       function updateCharCount() {
         const length = notes.value.length;
         charCount.textContent = `${length} 字`;
@@ -5370,6 +6095,7 @@
       }
 
       initNotes();
+      initSharedMemo();
     })();
   </script>
 </body>
