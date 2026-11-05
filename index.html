@@ -3050,9 +3050,9 @@
     @media (max-width: 960px) {
       .simulation-grid { grid-template-columns: 1fr; }
       .sim-side {
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.85fr);
-        align-items: start;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         gap: 14px;
       }
       .event-empty { min-height: 330px; }
@@ -3682,6 +3682,337 @@
       .shopping-grip { min-height: 32px; }
     }
 
+    /* ---------- Feature tabs & persistent shopping card ---------- */
+    .feature-nav {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin: 0 0 22px;
+      padding: 7px;
+      border: 2px solid var(--ink);
+      border-radius: 21px;
+      background: rgba(255, 250, 241, 0.98);
+      box-shadow: 5px 6px 0 rgba(72, 54, 49, 0.12);
+    }
+
+    .feature-tab {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      padding: 9px 11px;
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .feature-tab:hover {
+      border-color: rgba(72, 54, 49, 0.22);
+      background: rgba(255, 255, 255, 0.65);
+      transform: translateY(-1px);
+    }
+
+    .feature-tab.is-active {
+      border-color: var(--ink);
+      background: var(--butter);
+      box-shadow: 2px 2px 0 var(--ink);
+      transform: translateY(-1px);
+    }
+
+    .feature-tab[data-view="shared"].is-active { background: var(--sky); }
+    .feature-tab[data-view="notes"].is-active { background: var(--lilac); }
+
+    .feature-tab-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1.5px solid rgba(72, 54, 49, 0.5);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.55);
+      font-size: 17px;
+    }
+
+    .feature-tab[data-view="plan"] .feature-tab-icon { background: #ffe9d6; }
+    .feature-tab[data-view="shared"] .feature-tab-icon { background: #e1f2f8; }
+    .feature-tab[data-view="notes"] .feature-tab-icon { background: #eee7fb; }
+
+    .feature-tab-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      line-height: 1.3;
+    }
+
+    .feature-tab-text b {
+      overflow: hidden;
+      font-family: var(--display);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .feature-tab-text small {
+      overflow: hidden;
+      margin-top: 1px;
+      color: var(--ink-faint);
+      font-size: 9.5px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .feature-tab-mark {
+      margin-left: auto;
+      color: var(--ink-faint);
+      font-family: var(--display);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .feature-tab.is-active .feature-tab-mark { color: var(--ink); }
+
+    .feature-panel {
+      scroll-margin-top: 96px;
+    }
+
+    .feature-panel > .section-head { margin-top: 24px; }
+    .notes-section.feature-panel,
+    .shared-section.feature-panel { margin-top: 0; }
+
+    .shopping-card {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 80;
+      width: min(350px, calc(100vw - 20px));
+      max-height: calc(100vh - 16px);
+      overflow-y: auto;
+      margin: 0;
+      transform: none;
+      box-shadow: 10px 12px 0 rgba(72, 54, 49, 0.2);
+      overscroll-behavior: contain;
+    }
+
+    .shopping-card::before { top: 0; }
+
+    .shopping-collapse-btn {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      border: 1px solid rgba(72, 54, 49, 0.28);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.45);
+      color: #725d35;
+      transition: background 0.16s ease, transform 0.16s ease;
+    }
+
+    .shopping-collapse-btn .icon { font-size: 12px; transition: transform 0.18s ease; }
+    .shopping-collapse-btn:hover { background: #fffdf8; border-color: rgba(72, 54, 49, 0.6); }
+    .shopping-card.is-collapsed .shopping-collapse-btn .icon { transform: rotate(180deg); }
+
+    .shopping-card.is-collapsed .shopping-form,
+    .shopping-card.is-collapsed .shopping-suggestions,
+    .shopping-card.is-collapsed .shopping-list,
+    .shopping-card.is-collapsed .shopping-empty,
+    .shopping-card.is-collapsed .shopping-foot,
+    .shopping-card.is-collapsed .shopping-drag-tip { display: none; }
+
+    .shopping-card.is-collapsed .shopping-head { margin-bottom: 0; }
+    .shopping-card.is-collapsed .shopping-grip { min-height: 28px; }
+
+    @media (max-width: 720px) {
+      .feature-nav {
+        top: 7px;
+        gap: 4px;
+        margin-bottom: 16px;
+        padding: 5px;
+        border-radius: 17px;
+        box-shadow: 3px 4px 0 rgba(72, 54, 49, 0.12);
+      }
+
+      .feature-tab {
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 5px;
+        border-radius: 11px;
+      }
+
+      .feature-tab-icon {
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+        font-size: 14px;
+      }
+
+      .feature-tab-text b { font-size: 12.5px; }
+      .feature-tab-text small { display: none; }
+      .feature-tab-mark { display: none; }
+      .feature-panel { scroll-margin-top: 82px; }
+      .feature-panel > .section-head { margin-top: 20px; }
+
+      .shopping-card {
+        right: 10px;
+        bottom: 10px;
+        width: min(340px, calc(100vw - 16px));
+        max-height: calc(100vh - 16px);
+        padding: 16px 13px 12px;
+        border-radius: 17px;
+        box-shadow: 7px 9px 0 rgba(72, 54, 49, 0.2);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .feature-tab { gap: 5px; padding: 7px 4px; }
+      .feature-tab-icon { width: 26px; height: 26px; font-size: 13px; }
+      .feature-tab-text b { font-size: 11.5px; }
+    }
+
+    .export-center {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 17px;
+      padding: 16px 18px;
+      border: 1.5px dashed rgba(72, 54, 49, 0.38);
+      border-radius: 16px;
+      background: #fff9e9;
+    }
+
+    .export-copy { min-width: 0; }
+
+    .export-kicker {
+      display: block;
+      margin-bottom: 3px;
+      color: #8a6721;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+    }
+
+    .export-copy h3 {
+      margin: 0 0 3px;
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .export-copy p {
+      max-width: 46em;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 11.5px;
+      line-height: 1.6;
+    }
+
+    .export-copy strong { color: var(--ink); }
+
+    .export-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 7px;
+      flex: none;
+    }
+
+    .export-word-btn,
+    .export-quiet-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 38px;
+      border-radius: 9px;
+      font-size: 11.5px;
+      font-weight: 900;
+      line-height: 1.2;
+      white-space: nowrap;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .export-word-btn {
+      padding: 0 12px;
+      border: 1.5px solid var(--ink);
+      background: var(--butter);
+      color: var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .export-word-btn .icon { font-size: 14px; }
+    .export-word-btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); background: var(--peach); }
+    .export-word-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
+    .word-mark {
+      width: 21px;
+      height: 21px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(72, 54, 49, 0.45);
+      border-radius: 5px;
+      background: #fffdf8;
+      color: #2e5e9c;
+      font-family: Georgia, serif;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .export-quiet-btn {
+      padding: 0 9px;
+      border: 1.5px solid rgba(72, 54, 49, 0.3);
+      background: #fffdf8;
+      color: var(--ink-soft);
+    }
+
+    .export-quiet-btn:hover { border-color: var(--ink); background: #fff; color: var(--ink); }
+
+    .shopping-foot-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .shopping-word-btn {
+      padding: 2px 6px;
+      border: 1px solid rgba(72, 54, 49, 0.3);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.58);
+      color: #2e5e9c;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.4;
+    }
+
+    .shopping-word-btn:hover { background: #fffdf8; border-color: var(--ink); }
+
+    @media (max-width: 720px) {
+      .export-center {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 11px;
+        padding: 13px 12px;
+      }
+      .export-copy h3 { font-size: 16px; }
+      .export-copy p { font-size: 10.5px; }
+      .export-actions { width: 100%; justify-content: flex-start; }
+      .export-word-btn { flex: 1 1 100%; }
+      .export-quiet-btn { flex: 1; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after {
@@ -3916,6 +4247,25 @@
     </header>
 
     <main>
+      <nav class="feature-nav" id="featureNav" role="tablist" aria-label="功能分区">
+        <button class="feature-tab is-active" id="tab-plan" type="button" role="tab" aria-selected="true" aria-controls="panel-plan" data-view="plan" tabindex="0">
+          <span class="feature-tab-icon" aria-hidden="true"><svg class="icon"><use href="#i-route"/></svg></span>
+          <span class="feature-tab-text"><b>行程模拟</b><small>路线 · 清单 · 状况</small></span>
+          <span class="feature-tab-mark" aria-hidden="true">↗</span>
+        </button>
+        <button class="feature-tab" id="tab-shared" type="button" role="tab" aria-selected="false" aria-controls="shared-memo" data-view="shared" tabindex="-1">
+          <span class="feature-tab-icon" aria-hidden="true"><svg class="icon"><use href="#i-users"/></svg></span>
+          <span class="feature-tab-text"><b>共享备忘录</b><small>和朋友一起写</small></span>
+          <span class="feature-tab-mark" aria-hidden="true">↗</span>
+        </button>
+        <button class="feature-tab" id="tab-notes" type="button" role="tab" aria-selected="false" aria-controls="panel-notes" data-view="notes" tabindex="-1">
+          <span class="feature-tab-icon" aria-hidden="true"><svg class="icon"><use href="#i-notebook"/></svg></span>
+          <span class="feature-tab-text"><b>笔记</b><small>只保存在本机</small></span>
+          <span class="feature-tab-mark" aria-hidden="true">↗</span>
+        </button>
+      </nav>
+
+      <section class="feature-panel" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0">
       <div class="section-head">
         <div class="section-title-row">
           <span class="section-number section-number--planner" aria-hidden="true">02</span>
@@ -4079,63 +4429,11 @@
             </div>
           </section>
 
-          <div class="shopping-slot" id="shoppingSlot">
-            <section class="shopping-card" id="shoppingCard" aria-labelledby="shoppingTitle">
-              <div class="shopping-head" id="shoppingHandle" title="按住标题拖动小卡">
-                <div class="shopping-title-wrap">
-                  <span class="shopping-grip" aria-hidden="true">
-                    <svg class="icon"><use href="#i-grip"/></svg>
-                  </span>
-                  <div>
-                    <span class="shopping-kicker">DON'T FORGET TO BUY</span>
-                    <h3 id="shoppingTitle"><svg class="icon" aria-hidden="true"><use href="#i-suitcase"/></svg>待买小卡</h3>
-                  </div>
-                </div>
-                <div class="shopping-head-tools">
-                  <span class="shopping-count" id="shoppingCount">0 / 0</span>
-                  <button class="shopping-mode-btn" id="shoppingModeBtn" type="button" aria-label="让小卡浮动，随时记录" title="让小卡浮动">
-                    <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
-                    <span id="shoppingModeLabel">浮动</span>
-                  </button>
-                </div>
-              </div>
-
-              <form class="shopping-form" id="shoppingForm">
-                <label class="sr-only" for="shoppingInput">要买的物品</label>
-                <input class="shopping-input" id="shoppingInput" type="text" maxlength="40" autocomplete="off" placeholder="要买什么？比如 转换插头">
-                <button class="shopping-add" type="submit" title="加入待买清单" aria-label="加入待买清单">
-                  <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
-                </button>
-              </form>
-
-              <div class="shopping-suggestions">
-                <span>常忘：</span>
-                <button class="shopping-suggestion" type="button" data-buy="转换插头">转换插头</button>
-                <button class="shopping-suggestion" type="button" data-buy="驱蚊液">驱蚊液</button>
-                <button class="shopping-suggestion" type="button" data-buy="水泡贴">水泡贴</button>
-              </div>
-
-              <ul class="shopping-list" id="shoppingList" aria-live="polite"></ul>
-              <div class="shopping-empty" id="shoppingEmpty">还没有要买的东西。<br>把突然想到的丢进来，出门前再扫一眼。</div>
-
-              <div class="shopping-foot">
-                <span id="shoppingSummary">已买 0 / 0</span>
-                <button class="shopping-clear" id="clearBoughtBtn" type="button">清掉已买</button>
-              </div>
-              <p class="shopping-drag-tip">按住标题拖动 · 点「浮动」随时记录</p>
-            </section>
-
-            <div class="shopping-slot-hint" id="shoppingSlotHint" hidden>
-              <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
-              <span>待买小卡正在页面上浮动</span>
-              <button id="shoppingDockLink" type="button">召回</button>
-            </div>
-          </div>
         </aside>
       </div>
-    </main>
+      </section>
 
-    <section class="notes-section" aria-labelledby="notesTitle">
+    <section class="notes-section feature-panel" id="panel-notes" role="tabpanel" aria-labelledby="notesTitle" tabindex="0" hidden>
       <div class="section-head">
         <div class="section-title-row">
           <span class="section-number section-number--notes" aria-hidden="true">03</span>
@@ -4187,9 +4485,9 @@
             <div class="note-sheet-foot">
               <span class="char-count" id="charCount">0 字</span>
               <div class="note-actions">
-                <button class="quiet-btn" id="exportBtn" type="button">
+                <button class="quiet-btn" id="exportBtn" type="button" title="导出为 TXT 文本">
                   <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
-                  导出
+                  TXT
                 </button>
                 <button class="quiet-btn" id="clearBtn" type="button">
                   <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>
@@ -4200,9 +4498,26 @@
           </div>
         </div>
       </div>
+
+      <div class="export-center">
+        <div class="export-copy">
+          <span class="export-kicker">WORD EXPORT · 带走这一页</span>
+          <h3>下载为 Word 文档</h3>
+          <p>生成真正的 <strong>.docx</strong> 文件，Word / WPS 都能打开。可以把笔记和待买清单装进同一份，也可以只导出其中一块。</p>
+        </div>
+        <div class="export-actions">
+          <button class="export-word-btn" id="exportWordAllBtn" type="button">
+            <span class="word-mark" aria-hidden="true">W</span>
+            下载完整 Word
+            <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+          </button>
+          <button class="export-quiet-btn" id="exportWordNotesBtn" type="button">仅笔记</button>
+          <button class="export-quiet-btn" id="exportWordShoppingBtn" type="button">仅待买清单</button>
+        </div>
+      </div>
     </section>
 
-    <section class="shared-section" id="shared-memo" aria-labelledby="sharedTitle">
+    <section class="shared-section feature-panel" id="shared-memo" role="tabpanel" aria-labelledby="sharedTitle" tabindex="0" hidden>
       <div class="section-head">
         <div class="section-title-row">
           <span class="section-number section-number--shared" aria-hidden="true">04</span>
@@ -4286,6 +4601,56 @@
         </div>
       </div>
     </section>
+    </main>
+
+    <aside class="shopping-card" id="shoppingCard" aria-labelledby="shoppingTitle">
+      <div class="shopping-head" id="shoppingHandle" title="按住标题拖动小卡">
+        <div class="shopping-title-wrap">
+          <span class="shopping-grip" aria-hidden="true"><svg class="icon"><use href="#i-grip"/></svg></span>
+          <div>
+            <span class="shopping-kicker">DON'T FORGET TO BUY</span>
+            <h3 id="shoppingTitle"><svg class="icon" aria-hidden="true"><use href="#i-suitcase"/></svg>待买小卡</h3>
+          </div>
+        </div>
+        <div class="shopping-head-tools">
+          <span class="shopping-count" id="shoppingCount">0 / 0</span>
+          <button class="shopping-mode-btn" id="shoppingResetBtn" type="button" aria-label="让待买小卡回到右下角" title="回到右下角">
+            <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+            <span>归位</span>
+          </button>
+          <button class="shopping-collapse-btn" id="shoppingCollapseBtn" type="button" aria-expanded="true" aria-label="收起待买小卡" title="收起">
+            <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <form class="shopping-form" id="shoppingForm">
+        <label class="sr-only" for="shoppingInput">要买的物品</label>
+        <input class="shopping-input" id="shoppingInput" type="text" maxlength="40" autocomplete="off" placeholder="要买什么？比如 转换插头">
+        <button class="shopping-add" type="submit" title="加入待买清单" aria-label="加入待买清单">
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+        </button>
+      </form>
+
+      <div class="shopping-suggestions">
+        <span>常忘：</span>
+        <button class="shopping-suggestion" type="button" data-buy="转换插头">转换插头</button>
+        <button class="shopping-suggestion" type="button" data-buy="驱蚊液">驱蚊液</button>
+        <button class="shopping-suggestion" type="button" data-buy="水泡贴">水泡贴</button>
+      </div>
+
+      <ul class="shopping-list" id="shoppingList" aria-live="polite"></ul>
+      <div class="shopping-empty" id="shoppingEmpty">还没有要买的东西。<br>把突然想到的丢进来，出门前再扫一眼。</div>
+
+      <div class="shopping-foot">
+        <span id="shoppingSummary">已买 0 / 0</span>
+        <div class="shopping-foot-actions">
+          <button class="shopping-word-btn" id="shoppingWordBtn" type="button" title="把待买清单导出为 Word">Word</button>
+          <button class="shopping-clear" id="clearBoughtBtn" type="button">清掉已买</button>
+        </div>
+      </div>
+      <p class="shopping-drag-tip">按住标题拖动 · 位置会自动记住</p>
+    </aside>
 
     <footer class="site-foot">
       <p>旅游模拟器desuwa · 第一视角全流程预演，让真实出发少一点尴尬<span class="site-version">v1.4</span></p>
@@ -4357,6 +4722,7 @@
       ];
       const SHOPPING_KEY = 'travel-simulator-desuwa-shopping-v2';
       const SHOPPING_POS_KEY = 'travel-simulator-desuwa-shopping-position-v1';
+      const SHOPPING_COLLAPSED_KEY = 'travel-simulator-desuwa-shopping-collapsed-v1';
       const CHECKS_KEY = 'travel-simulator-desuwa-checks-v2';
 
       function stageChecksFallback(type) {
@@ -4971,13 +5337,11 @@
       const shoppingCount = $('#shoppingCount');
       const shoppingSummary = $('#shoppingSummary');
       const clearBoughtBtn = $('#clearBoughtBtn');
-      const shoppingSlot = $('#shoppingSlot');
+      const shoppingWordBtn = $('#shoppingWordBtn');
       const shoppingCard = $('#shoppingCard');
       const shoppingHandle = $('#shoppingHandle');
-      const shoppingModeBtn = $('#shoppingModeBtn');
-      const shoppingModeLabel = $('#shoppingModeLabel');
-      const shoppingSlotHint = $('#shoppingSlotHint');
-      const shoppingDockLink = $('#shoppingDockLink');
+      const shoppingResetBtn = $('#shoppingResetBtn');
+      const shoppingCollapseBtn = $('#shoppingCollapseBtn');
       const sharedMemo = $('#sharedMemo');
       const sharedStatus = $('#sharedStatus');
       const sharedSync = $('#sharedSync');
@@ -5004,8 +5368,19 @@
       const noteSheet = $('#noteSheet');
       const clearBtn = $('#clearBtn');
       const clearLabel = $('#clearLabel');
+      const exportWordAllBtn = $('#exportWordAllBtn');
+      const exportWordNotesBtn = $('#exportWordNotesBtn');
+      const exportWordShoppingBtn = $('#exportWordShoppingBtn');
       const toast = $('#toast');
+      const featureNav = $('#featureNav');
+      const featureTabs = $$('.feature-tab');
+      const featurePanels = {
+        plan: $('#panel-plan'),
+        shared: $('#shared-memo'),
+        notes: $('#panel-notes')
+      };
 
+      let activeFeatureView = 'plan';
       let toastTimer = null;
       let saveTimer = null;
       let clearTimer = null;
@@ -5587,41 +5962,38 @@
         showToast('已清掉买到的物品');
       });
 
-      function isShoppingFloating() {
-        return shoppingCard.classList.contains('is-floating');
-      }
-
       function clampNumber(value, min, max) {
         return Math.min(Math.max(value, min), Math.max(min, max));
       }
 
-      function setShoppingModeUI(floating) {
-        shoppingModeLabel.textContent = floating ? '归位' : '浮动';
-        shoppingModeBtn.setAttribute('aria-label', floating ? '将待买小卡收回原位' : '让小卡浮动，随时记录');
-        shoppingModeBtn.title = floating ? '将小卡收回原位' : '让小卡浮动，随时记录';
-        const iconUse = shoppingModeBtn.querySelector('use');
-        if (iconUse) iconUse.setAttribute('href', floating ? '#i-pin' : '#i-grip');
+      function defaultShoppingPosition() {
+        const margin = 20;
+        const width = Math.min(350, window.innerWidth - 20);
+        const height = shoppingCard.offsetHeight;
+        return {
+          left: Math.max(8, window.innerWidth - width - margin),
+          top: Math.max(8, window.innerHeight - height - margin),
+          width
+        };
       }
 
-      function positionFloatingShopping(left, top) {
-        if (!isShoppingFloating()) return;
+      function positionShoppingCard(left, top, options = {}) {
         const margin = 8;
-        const width = shoppingCard.offsetWidth;
-        const height = shoppingCard.offsetHeight;
+        const requestedWidth = Number(options.width) || shoppingCard.offsetWidth || 350;
+        const width = Math.max(240, Math.min(requestedWidth, window.innerWidth - 16, 360));
+        shoppingCard.style.width = `${width}px`;
+        const height = Math.min(shoppingCard.offsetHeight, window.innerHeight - 16);
         const maxLeft = window.innerWidth - width - margin;
         const maxTop = window.innerHeight - height - margin;
         shoppingCard.style.left = `${clampNumber(left, margin, maxLeft)}px`;
         shoppingCard.style.top = `${clampNumber(top, margin, maxTop)}px`;
+        shoppingCard.style.right = 'auto';
+        shoppingCard.style.bottom = 'auto';
       }
 
       function saveShoppingPosition() {
         try {
-          if (!isShoppingFloating()) {
-            window.localStorage.setItem(SHOPPING_POS_KEY, JSON.stringify({ floating: false }));
-            return;
-          }
           window.localStorage.setItem(SHOPPING_POS_KEY, JSON.stringify({
-            floating: true,
             left: parseFloat(shoppingCard.style.left) || 0,
             top: parseFloat(shoppingCard.style.top) || 0,
             width: shoppingCard.offsetWidth
@@ -5631,85 +6003,71 @@
         }
       }
 
-      function floatShoppingCard(options = {}) {
-        if (isShoppingFloating()) return;
-        const rect = shoppingCard.getBoundingClientRect();
-        const floatWidth = Math.min(options.width || rect.width || 330, 360, window.innerWidth - 16);
-        const slotHeight = Math.max(180, rect.height);
-
-        shoppingSlot.style.minHeight = `${slotHeight}px`;
-        shoppingSlotHint.hidden = false;
-        shoppingSlotHint.style.minHeight = `${slotHeight}px`;
-
-        shoppingCard.style.width = `${Math.max(240, floatWidth)}px`;
-        shoppingCard.style.left = `${rect.left}px`;
-        shoppingCard.style.top = `${rect.top}px`;
-        shoppingCard.classList.add('is-floating');
-        setShoppingModeUI(true);
-        positionFloatingShopping(options.left ?? rect.left, options.top ?? rect.top);
-        const floatingHeight = Math.max(180, shoppingCard.offsetHeight);
-        shoppingSlot.style.minHeight = `${floatingHeight}px`;
-        shoppingSlotHint.style.minHeight = `${floatingHeight}px`;
-        if (options.persist !== false) saveShoppingPosition();
+      function setShoppingCollapsed(collapsed, persist = true) {
+        shoppingCard.classList.toggle('is-collapsed', collapsed);
+        shoppingCollapseBtn.setAttribute('aria-expanded', String(!collapsed));
+        shoppingCollapseBtn.setAttribute('aria-label', collapsed ? '展开待买小卡' : '收起待买小卡');
+        shoppingCollapseBtn.title = collapsed ? '展开' : '收起';
+        if (persist) {
+          try {
+            window.localStorage.setItem(SHOPPING_COLLAPSED_KEY, collapsed ? '1' : '0');
+          } catch (error) {
+            // State is still applied for this page session.
+          }
+        }
+        if (!collapsed) {
+          window.requestAnimationFrame(() => {
+            positionShoppingCard(
+              parseFloat(shoppingCard.style.left) || 0,
+              parseFloat(shoppingCard.style.top) || 0
+            );
+          });
+        }
       }
 
-      function dockShoppingCard(options = {}) {
-        if (!isShoppingFloating()) return;
-        shoppingCard.classList.remove('is-floating', 'is-dragging');
-        shoppingCard.style.removeProperty('left');
-        shoppingCard.style.removeProperty('top');
-        shoppingCard.style.removeProperty('width');
-        shoppingSlot.style.removeProperty('min-height');
-        shoppingSlotHint.hidden = true;
-        shoppingSlotHint.style.removeProperty('min-height');
-        setShoppingModeUI(false);
-        saveShoppingPosition();
-        if (options.scrollIntoView) {
-          window.setTimeout(() => {
-            shoppingSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 80);
+      function restoreShoppingCollapsed() {
+        try {
+          const saved = window.localStorage.getItem(SHOPPING_COLLAPSED_KEY);
+          if (saved === '1' || saved === '0') {
+            setShoppingCollapsed(saved === '1', false);
+          } else {
+            // On a first phone visit, keep the card compact so it does not cover the form.
+            setShoppingCollapsed(window.matchMedia('(max-width: 720px)').matches, false);
+          }
+        } catch (error) {
+          setShoppingCollapsed(window.matchMedia('(max-width: 720px)').matches, false);
         }
+      }
+
+      shoppingCollapseBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const collapsed = !shoppingCard.classList.contains('is-collapsed');
+        setShoppingCollapsed(collapsed);
+      });
+
+      function resetShoppingPosition() {
+        const position = defaultShoppingPosition();
+        positionShoppingCard(position.left, position.top, { width: position.width });
+        saveShoppingPosition();
       }
 
       function restoreShoppingPosition() {
         try {
           const saved = JSON.parse(window.localStorage.getItem(SHOPPING_POS_KEY) || '{}');
-          if (!saved.floating) return;
-          const rect = shoppingCard.getBoundingClientRect();
-          floatShoppingCard({
-            left: Number(saved.left) || rect.left,
-            top: Number(saved.top) || rect.top,
-            width: Number(saved.width) || rect.width,
-            persist: false
-          });
+          if (Number.isFinite(Number(saved.left)) && Number.isFinite(Number(saved.top)) && Number(saved.left) >= 0 && Number(saved.top) >= 0) {
+            positionShoppingCard(Number(saved.left), Number(saved.top), { width: Number(saved.width) || 350 });
+          } else {
+            resetShoppingPosition();
+          }
         } catch (error) {
-          // Ignore malformed saved positions.
+          resetShoppingPosition();
         }
       }
 
-      shoppingModeBtn.addEventListener('click', (event) => {
+      shoppingResetBtn.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (isShoppingFloating()) {
-          dockShoppingCard({ scrollIntoView: true });
-          showToast('待买小卡已归位');
-        } else {
-          floatShoppingCard();
-          showToast('小卡已浮动，按住标题可以拖动');
-        }
-      });
-
-      shoppingDockLink.addEventListener('click', () => {
-        dockShoppingCard({ scrollIntoView: true });
-        showToast('待买小卡已归位');
-      });
-
-      shoppingHandle.addEventListener('dblclick', (event) => {
-        if (event.target.closest('button, input, a, textarea, select')) return;
-        if (isShoppingFloating()) {
-          dockShoppingCard({ scrollIntoView: true });
-        } else {
-          floatShoppingCard();
-        }
+        resetShoppingPosition();
+        showToast('待买小卡已回到右下角');
       });
 
       shoppingHandle.addEventListener('pointerdown', (event) => {
@@ -5721,10 +6079,9 @@
           startX: event.clientX,
           startY: event.clientY,
           originLeft: rect.left,
-          originTop: rect.top,
-          active: isShoppingFloating()
+          originTop: rect.top
         };
-        if (shoppingDrag.active) shoppingCard.classList.add('is-dragging');
+        shoppingCard.classList.add('is-dragging');
         try {
           shoppingHandle.setPointerCapture(event.pointerId);
         } catch (error) {
@@ -5737,18 +6094,11 @@
         if (!shoppingDrag || event.pointerId !== shoppingDrag.pointerId) return;
         const dx = event.clientX - shoppingDrag.startX;
         const dy = event.clientY - shoppingDrag.startY;
-        if (!shoppingDrag.active) {
-          if (Math.hypot(dx, dy) < 5) return;
-          floatShoppingCard();
-          shoppingDrag.active = true;
-          shoppingCard.classList.add('is-dragging');
-        }
-        positionFloatingShopping(shoppingDrag.originLeft + dx, shoppingDrag.originTop + dy);
+        positionShoppingCard(shoppingDrag.originLeft + dx, shoppingDrag.originTop + dy);
       });
 
       function finishShoppingDrag(event) {
         if (!shoppingDrag || event.pointerId !== shoppingDrag.pointerId) return;
-        const wasActive = shoppingDrag.active;
         try {
           shoppingHandle.releasePointerCapture(shoppingDrag.pointerId);
         } catch (error) {
@@ -5756,33 +6106,109 @@
         }
         shoppingDrag = null;
         shoppingCard.classList.remove('is-dragging');
-        if (wasActive) {
-          positionFloatingShopping(
-            parseFloat(shoppingCard.style.left) || 0,
-            parseFloat(shoppingCard.style.top) || 0
-          );
-          saveShoppingPosition();
-        }
+        positionShoppingCard(
+          parseFloat(shoppingCard.style.left) || 0,
+          parseFloat(shoppingCard.style.top) || 0
+        );
+        saveShoppingPosition();
       }
 
       shoppingHandle.addEventListener('pointerup', finishShoppingDrag);
       shoppingHandle.addEventListener('pointercancel', finishShoppingDrag);
 
       window.addEventListener('resize', () => {
-        if (!isShoppingFloating()) return;
         window.clearTimeout(shoppingResizeTimer);
         shoppingResizeTimer = window.setTimeout(() => {
           const left = parseFloat(shoppingCard.style.left) || 0;
           const top = parseFloat(shoppingCard.style.top) || 0;
-          shoppingCard.style.width = `${Math.min(parseFloat(shoppingCard.style.width) || 340, window.innerWidth - 16, 360)}px`;
-          positionFloatingShopping(left, top);
+          const width = Math.min(parseFloat(shoppingCard.style.width) || 350, window.innerWidth - 16, 360);
+          positionShoppingCard(left, top, { width });
           saveShoppingPosition();
         }, 100);
       });
 
+      const featureViewHashes = {
+        plan: '#plan',
+        shared: '#shared-memo',
+        notes: '#notes-panel'
+      };
+      const featureHashViews = {
+        '#plan': 'plan',
+        '#shared-memo': 'shared',
+        '#notes-panel': 'notes'
+      };
+
+      function activateFeatureView(view, options = {}) {
+        if (!featurePanels[view]) view = 'plan';
+        activeFeatureView = view;
+        featureTabs.forEach((tab) => {
+          const selected = tab.dataset.view === view;
+          tab.classList.toggle('is-active', selected);
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        Object.entries(featurePanels).forEach(([key, panel]) => {
+          if (panel) panel.hidden = key !== view;
+        });
+        document.body.dataset.view = view;
+        if (options.updateHash !== false) {
+          try {
+            window.history.replaceState(null, '', featureViewHashes[view]);
+          } catch (error) {
+            // Static file previews may not allow history updates.
+          }
+        }
+        if (options.scroll) {
+          window.requestAnimationFrame(() => {
+            featurePanels[view]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+      }
+
+      function initFeatureTabs() {
+        if (!featureNav) return;
+        featureTabs.forEach((tab) => {
+          tab.addEventListener('click', () => {
+            activateFeatureView(tab.dataset.view, { scroll: true });
+            tab.focus();
+          });
+        });
+
+        featureNav.addEventListener('keydown', (event) => {
+          const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+          if (!keys.includes(event.key)) return;
+          const current = featureTabs.indexOf(document.activeElement);
+          if (current < 0) return;
+          event.preventDefault();
+          let next = current;
+          if (event.key === 'ArrowLeft') next = (current - 1 + featureTabs.length) % featureTabs.length;
+          if (event.key === 'ArrowRight') next = (current + 1) % featureTabs.length;
+          if (event.key === 'Home') next = 0;
+          if (event.key === 'End') next = featureTabs.length - 1;
+          const nextTab = featureTabs[next];
+          activateFeatureView(nextTab.dataset.view, { scroll: true });
+          nextTab.focus();
+        });
+
+        window.addEventListener('hashchange', () => {
+          const view = featureHashViews[window.location.hash];
+          if (view) activateFeatureView(view, { scroll: true, updateHash: false });
+        });
+
+        const initialView = featureHashViews[window.location.hash] || 'plan';
+        activateFeatureView(initialView, {
+          scroll: Boolean(featureHashViews[window.location.hash]),
+          updateHash: false
+        });
+      }
+
       loadShopping();
       renderShopping();
-      window.setTimeout(restoreShoppingPosition, 120);
+      window.requestAnimationFrame(() => {
+        restoreShoppingCollapsed();
+        restoreShoppingPosition();
+        shoppingCard.classList.add('is-ready');
+      });
 
       function sharedMemoHeaders(includeJson = false) {
         const headers = {
@@ -6266,6 +6692,278 @@
         showToast('笔记已经清空，重新开始吧');
       });
 
+      function escapeWordXml(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&apos;');
+      }
+
+      function wordRun(text, options = {}) {
+        const size = options.size || 22;
+        const properties = [
+          '<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft YaHei"/>',
+          options.bold ? '<w:b/>' : '',
+          options.italic ? '<w:i/>' : '',
+          options.strike ? '<w:strike/>' : '',
+          options.color ? `<w:color w:val="${options.color}"/>` : '',
+          `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`
+        ].join('');
+        return `<w:r><w:rPr>${properties}</w:rPr><w:t xml:space="preserve">${escapeWordXml(text)}</w:t></w:r>`;
+      }
+
+      function wordParagraph(text, options = {}) {
+        const properties = [
+          options.style ? `<w:pStyle w:val="${options.style}"/>` : '',
+          `<w:spacing w:before="${options.before || 0}" w:after="${options.after || 120}" w:line="${options.line || 300}" w:lineRule="auto"/>`,
+          options.indent ? `<w:ind w:left="${options.indent}"/>` : '',
+          options.shading ? `<w:shd w:val="clear" w:color="auto" w:fill="${options.shading}"/>` : ''
+        ].join('');
+        return `<w:p><w:pPr>${properties}</w:pPr>${text ? wordRun(text, options) : ''}</w:p>`;
+      }
+
+      const WORD_STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft YaHei"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:rPrDefault>
+    <w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="300" w:lineRule="auto"/></w:pPr></w:pPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+  <w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:spacing w:before="0" w:after="160"/></w:pPr><w:rPr><w:b/><w:color w:val="483631"/><w:sz w:val="40"/><w:szCs w:val="40"/></w:rPr></w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="120"/></w:pPr><w:rPr><w:b/><w:color w:val="8A4B32"/><w:sz w:val="30"/><w:szCs w:val="30"/></w:rPr></w:style>
+</w:styles>`;
+
+      function makeWordDocumentXml(scope) {
+        const includeNotes = scope !== 'shopping';
+        const includeShopping = scope !== 'notes';
+        const title = scope === 'notes' ? '旅行笔记' : scope === 'shopping' ? '待买清单' : '旅行笔记与待买清单';
+        const paragraphs = [];
+        const now = new Date();
+        const dateLabel = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeLabel = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        paragraphs.push(wordParagraph(title, { style: 'Title', bold: true, size: 40, after: 80, color: '483631' }));
+        paragraphs.push(wordParagraph(`旅游模拟器desuwa · 导出于 ${dateLabel} ${timeLabel}`, { size: 19, after: 240, color: '8A7A72' }));
+
+        if (includeNotes) {
+          paragraphs.push(wordParagraph('旅途笔记', { style: 'Heading1', bold: true, size: 28, after: 120, color: '8A4B32' }));
+          const noteText = notes.value.replace(/\r\n?/g, '\n');
+          if (noteText.trim()) {
+            noteText.split('\n').forEach((line) => {
+              paragraphs.push(wordParagraph(line, { size: 22, after: line.trim() ? 90 : 30, line: 320 }));
+            });
+          } else {
+            paragraphs.push(wordParagraph('（当前还没有笔记内容）', { italic: true, size: 20, color: '9B8A80', after: 160 }));
+          }
+        }
+
+        if (includeShopping) {
+          const bought = shopping.filter((item) => item.bought).length;
+          paragraphs.push(wordParagraph('待买清单', { style: 'Heading1', bold: true, size: 28, before: 100, after: 90, color: '8A4B32' }));
+          paragraphs.push(wordParagraph(`已买 ${bought} / ${shopping.length} 项`, { size: 19, after: 140, color: '8A7A72' }));
+          if (shopping.length) {
+            shopping.forEach((item) => {
+              paragraphs.push(wordParagraph(
+                `${item.bought ? '☑' : '☐'} ${item.text}`,
+                {
+                  size: 22,
+                  after: 80,
+                  indent: 220,
+                  strike: item.bought,
+                  color: item.bought ? '8F8178' : '483631'
+                }
+              ));
+            });
+          } else {
+            paragraphs.push(wordParagraph('（当前还没有待买物品）', { italic: true, size: 20, color: '9B8A80', after: 160 }));
+          }
+        }
+
+        paragraphs.push(wordParagraph('由 旅游模拟器desuwa 导出 · 计划会变，记得给自己留一点余量。', { size: 18, italic: true, color: 'B09C8F', before: 260, after: 0 }));
+
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    ${paragraphs.join('\n    ')}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+      }
+
+      const WORD_CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+      const WORD_ROOT_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+      const WORD_DOCUMENT_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+      let wordCrcTable = null;
+      function wordCrc32(bytes) {
+        if (!wordCrcTable) {
+          wordCrcTable = new Uint32Array(256);
+          for (let n = 0; n < 256; n += 1) {
+            let c = n;
+            for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            wordCrcTable[n] = c >>> 0;
+          }
+        }
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i += 1) {
+          crc = wordCrcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      function makeZip(files) {
+        const encoder = new TextEncoder();
+        const localParts = [];
+        const centralParts = [];
+        let offset = 0;
+        const now = new Date();
+        const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+        const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+
+        files.forEach((file) => {
+          const name = encoder.encode(file.name);
+          const data = encoder.encode(file.content);
+          const crc = wordCrc32(data);
+
+          const local = new Uint8Array(30 + name.length + data.length);
+          const localView = new DataView(local.buffer);
+          localView.setUint32(0, 0x04034b50, true);
+          localView.setUint16(4, 20, true);
+          localView.setUint16(6, 0x0800, true);
+          localView.setUint16(8, 0, true);
+          localView.setUint16(10, dosTime, true);
+          localView.setUint16(12, dosDate, true);
+          localView.setUint32(14, crc, true);
+          localView.setUint32(18, data.length, true);
+          localView.setUint32(22, data.length, true);
+          localView.setUint16(26, name.length, true);
+          localView.setUint16(28, 0, true);
+          local.set(name, 30);
+          local.set(data, 30 + name.length);
+          localParts.push(local);
+
+          const central = new Uint8Array(46 + name.length);
+          const centralView = new DataView(central.buffer);
+          centralView.setUint32(0, 0x02014b50, true);
+          centralView.setUint16(4, 20, true);
+          centralView.setUint16(6, 20, true);
+          centralView.setUint16(8, 0x0800, true);
+          centralView.setUint16(10, 0, true);
+          centralView.setUint16(12, dosTime, true);
+          centralView.setUint16(14, dosDate, true);
+          centralView.setUint32(16, crc, true);
+          centralView.setUint32(20, data.length, true);
+          centralView.setUint32(24, data.length, true);
+          centralView.setUint16(28, name.length, true);
+          centralView.setUint16(30, 0, true);
+          centralView.setUint16(32, 0, true);
+          centralView.setUint16(34, 0, true);
+          centralView.setUint16(36, 0, true);
+          centralView.setUint32(38, 0, true);
+          centralView.setUint32(42, offset, true);
+          central.set(name, 46);
+          centralParts.push(central);
+
+          offset += local.length;
+        });
+
+        const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+        const centralOffset = offset;
+        const end = new Uint8Array(22);
+        const endView = new DataView(end.buffer);
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(4, 0, true);
+        endView.setUint16(6, 0, true);
+        endView.setUint16(8, files.length, true);
+        endView.setUint16(10, files.length, true);
+        endView.setUint32(12, centralSize, true);
+        endView.setUint32(16, centralOffset, true);
+        endView.setUint16(20, 0, true);
+
+        const all = [...localParts, ...centralParts, end];
+        const totalSize = all.reduce((sum, part) => sum + part.length, 0);
+        const result = new Uint8Array(totalSize);
+        let position = 0;
+        all.forEach((part) => {
+          result.set(part, position);
+          position += part.length;
+        });
+        return result;
+      }
+
+      function normalizeWordScope(scope) {
+        return ['all', 'notes', 'shopping'].includes(scope) ? scope : 'all';
+      }
+
+      function downloadWord(scope = 'all') {
+        const normalizedScope = normalizeWordScope(scope);
+        const hasNotes = Boolean(notes.value.trim());
+        const hasShopping = shopping.length > 0;
+        if (normalizedScope === 'notes' && !hasNotes) {
+          showToast('还没有笔记内容可以导出');
+          return;
+        }
+        if (normalizedScope === 'shopping' && !hasShopping) {
+          showToast('待买清单还是空的');
+          return;
+        }
+        if (normalizedScope === 'all' && !hasNotes && !hasShopping) {
+          showToast('笔记和待买清单都还是空的');
+          return;
+        }
+
+        const bodyXml = makeWordDocumentXml(normalizedScope);
+        const files = [
+          { name: '[Content_Types].xml', content: WORD_CONTENT_TYPES_XML },
+          { name: '_rels/.rels', content: WORD_ROOT_RELS_XML },
+          { name: 'word/document.xml', content: bodyXml },
+          { name: 'word/styles.xml', content: WORD_STYLES_XML },
+          { name: 'word/_rels/document.xml.rels', content: WORD_DOCUMENT_RELS_XML }
+        ];
+        const bytes = makeZip(files);
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const now = new Date();
+        const date = [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, '0'),
+          String(now.getDate()).padStart(2, '0')
+        ].join('-');
+        const label = normalizedScope === 'notes' ? '旅行笔记' : normalizedScope === 'shopping' ? '待买清单' : '旅行笔记与待买清单';
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${label}-${date}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('Word 文档已经生成');
+      }
+
+      exportWordAllBtn.addEventListener('click', () => downloadWord('all'));
+      exportWordNotesBtn.addEventListener('click', () => downloadWord('notes'));
+      exportWordShoppingBtn.addEventListener('click', () => downloadWord('shopping'));
+      shoppingWordBtn.addEventListener('click', () => downloadWord('shopping'));
+
       function exportNotes() {
         if (!notes.value.trim()) {
           showToast('先写点什么，再导出吧');
@@ -6306,6 +7004,7 @@
       }
 
       applySiteCopy();
+      initFeatureTabs();
       initNotes();
       initSharedMemo();
     })();

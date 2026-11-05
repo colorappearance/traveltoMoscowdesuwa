@@ -27,20 +27,20 @@
 
 window.SITE_COPY = {
   page: {
-    title: '旅游模拟器desuwa v1.4 · 从订票到回家，全流程预演',
+    title: '旅游模拟器desuwa v1.4 · 出发之前先练练~',
     brandTitle: '旅游模拟器',
     brandEnglish: 'desuwa',
-    heroSubtitle: '从几个月前抢票，到落地后的第一杯水，把整趟旅程以<strong>第一视角</strong>预演一遍。流程、冷门状况、容易忘的小物，一次补齐。',
+    heroSubtitle: '从买票到回家，整趟旅程以<strong>第一视角</strong>预演。流程小物，一次补齐。',
     plannerKicker: 'Plan the whole journey',
-    plannerTitle: '把整趟旅程，从几个月前预演一遍',
+    plannerTitle: '整趟旅程,绝对预演',
     plannerNote: '<span class="scribble">不赶景点，先排雷。</span>每一件小事都算数。',
     notesKicker: 'Write it before you forget',
-    notesTitle: '把怕忘的，写在小纸条上',
-    notesNote: '<span class="scribble">好记性不如烂笔头。</span> 笔记和待买清单都会自动保存在这台设备里。',
+    notesTitle: '怕忘的，写在小纸条上',
+    notesNote: '<span class="scribble">好记性不如烂笔头。</span> 笔记和待买清单都会自动保存在本设备里。',
     sharedKicker: 'Plan together, write together',
     sharedTitle: '和朋友一起写的共享备忘录',
-    sharedNote: '<span class="scribble">有密码的人，才能一起改。</span>',
-    sharedDesc: '打开这个页面的朋友需要输入你们约定的密码，才能看到同一张便签。修改会自动保存，约 3 秒同步一次。<strong>密码不要和链接放在同一个地方</strong>；多人同时编辑时，以最后一次保存为准。'
+    sharedNote: '<span class="scribble">有密码才能一起改。</span>',
+    sharedDesc: '打开这个页面的朋友需要输入你们约定的密码，才能看到同一张便签。修改会自动保存，约 3 秒同步一次</strong>；多人同时编辑时，以最后一次保存为准。'
   }
 };
 
@@ -56,8 +56,8 @@ window.SITE_COPY = {
           {
             id: 'plan',
             time: 'T-6~3 个月',
-            title: '先把资格和钱准备好',
-            sub: '证件 · 签证 · 机票 · 保险',
+            title: '先把证和钱准备好',
+            sub: '证件 · 签证 · 机票 · 现金',
             icon: 'passport',
             color: '#ffd76c',
             checks: [
